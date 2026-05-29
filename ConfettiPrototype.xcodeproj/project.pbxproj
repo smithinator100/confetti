@@ -21,6 +21,7 @@
 		C9DA2207BE89B80DE843B739 /* ConfettiPrototypeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91A030B3E178E14115A7565 /* ConfettiPrototypeUITests.swift */; };
 		CB6BA9BB18AD93AFCFCF20AB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90CFB26A18CDADD9E86B10CE /* ContentView.swift */; };
 		D351C073599995CC2F2151DB /* iphone-screen.png in Resources */ = {isa = PBXBuildFile; fileRef = 0114A7DCD2745889DE819139 /* iphone-screen.png */; };
+		D4372328931DE1328490B4A0 /* ConfettiShapeArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B347873F66A97F8826F444F2 /* ConfettiShapeArt.swift */; };
 		D5797ACA3B2DA16F335C259E /* NativeConfettiSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4A3D58F91D53F70F0761B9 /* NativeConfettiSettings.swift */; };
 /* End PBXBuildFile section */
 
@@ -52,6 +53,7 @@
 		995ADD2AAD098FA32134FA16 /* ConfettiPrototype.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ConfettiPrototype.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A21FE0B29F913BA37748FF34 /* confetti.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = confetti.html; sourceTree = "<group>"; };
 		AAFE58D7083E4D5D38FBDC3D /* ConfettiPrototypeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiPrototypeApp.swift; sourceTree = "<group>"; };
+		B347873F66A97F8826F444F2 /* ConfettiShapeArt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiShapeArt.swift; sourceTree = "<group>"; };
 		BB3DDAB74E25C0613BAB8992 /* ConfettiBurstView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiBurstView.swift; sourceTree = "<group>"; };
 		BBA2BAC09BCB37B4D68D775A /* motion.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = motion.min.js; sourceTree = "<group>"; };
 		E9163BC4491853AE9A051D39 /* subscription-check-hero.svg */ = {isa = PBXFileReference; path = "subscription-check-hero.svg"; sourceTree = "<group>"; };
@@ -69,6 +71,7 @@
 				BB3DDAB74E25C0613BAB8992 /* ConfettiBurstView.swift */,
 				86E55B30EE62CB8D7185350E /* ConfettiPhysics.swift */,
 				AAFE58D7083E4D5D38FBDC3D /* ConfettiPrototypeApp.swift */,
+				B347873F66A97F8826F444F2 /* ConfettiShapeArt.swift */,
 				90CFB26A18CDADD9E86B10CE /* ContentView.swift */,
 				1D4A3D58F91D53F70F0761B9 /* NativeConfettiSettings.swift */,
 				EFCB795168D431B05244114E /* NativePane.swift */,
@@ -252,6 +255,7 @@
 				6E5C070E34D89DDBB52A79AA /* ConfettiBurstView.swift in Sources */,
 				91FD7EE7E90D2935AAE7A603 /* ConfettiPhysics.swift in Sources */,
 				B7610E5CA3B98E98278E2688 /* ConfettiPrototypeApp.swift in Sources */,
+				D4372328931DE1328490B4A0 /* ConfettiShapeArt.swift in Sources */,
 				CB6BA9BB18AD93AFCFCF20AB /* ContentView.swift in Sources */,
 				D5797ACA3B2DA16F335C259E /* NativeConfettiSettings.swift in Sources */,
 				BD7410C5092CD21DADD6FD8F /* NativePane.swift in Sources */,

@@ -39,6 +39,7 @@ final class ConfettiBurstHostView: NSView {
     private let heroLayer = CALayer()
     private let particleContainer = CALayer()
     private let heroCoverLayer = CALayer()
+    private let heroPulseAnimationKey = "hero-pulse"
     private var coverGeneration = 0
 
     override var isFlipped: Bool { true }
@@ -85,19 +86,25 @@ final class ConfettiBurstHostView: NSView {
     func performBurst() {
         let settings = currentSettings
         let activeShapes = NativeConfettiSettings.weightedShapes.filter { settings.enabledShapes.contains($0) }
-        if activeShapes.isEmpty { return }
+        if activeShapes.isEmpty {
+            pulseHero(to: settings.pictogramScaleSize, duration: settings.pictogramScaleDuration)
+            return
+        }
 
-        let activeColors = settings.enabledColorFamilies
+        let activeShades = settings.enabledColorFamilies
             .compactMap { NativeConfettiSettings.colorFamilies[$0] }
             .flatMap { $0 }
-            .map { NSColor($0) }
-        if activeColors.isEmpty { return }
+        if activeShades.isEmpty {
+            pulseHero(to: settings.pictogramScaleSize, duration: settings.pictogramScaleDuration)
+            return
+        }
 
         let ticks = Int(round(settings.duration * 60))
 
         coverGeneration += 1
         let generation = coverGeneration
         heroCoverLayer.isHidden = false
+        pulseHero(to: settings.pictogramScaleSize, duration: settings.pictogramScaleDuration)
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.frontTransitionDelay) { [weak self] in
             guard let self, self.coverGeneration == generation else { return }
             CATransaction.begin()
@@ -113,19 +120,22 @@ final class ConfettiBurstHostView: NSView {
             let wobbleSpeed = min(0.11, Double.random(in: 0...0.1) + 0.05)
             let wobbleOffset = Double.random(in: 0...10)
             let pieceSize = 6 * settings.size + Double.random(in: 0...(6 * settings.size * settings.sizeVariation))
+            let sizeDepth = pieceSize / max(6 * settings.size, 1)
+            let depthGravity = settings.gravity * (1 + (sizeDepth - 1) * 0.35)
             let tiltRotations = 2 + Double.random(in: 0...4)
             let rotation = Double.random(in: 0...360)
             let fadeOutEnd = 1 - Double.random(in: 0...settings.fadeOutVariance)
 
             guard let shape = activeShapes.randomElement(),
-                  let color = activeColors.randomElement() else { continue }
+                  let shade = activeShades.randomElement(),
+                  let variant = ConfettiShapeArt.randomVariant(for: shape) else { continue }
 
             let keyframes = ConfettiPhysics.computeKeyframes(
                 .init(
                     angle: angle,
                     startVelocity: velocity,
                     decay: settings.decay,
-                    gravity: settings.gravity,
+                    gravity: depthGravity,
                     drift: 0,
                     wobbleSpeed: wobbleSpeed,
                     wobbleOffset: wobbleOffset,
@@ -133,19 +143,23 @@ final class ConfettiBurstHostView: NSView {
                     ticks: ticks,
                     xTiltRotations: tiltRotations * settings.xSpin,
                     tiltRotations: tiltRotations * settings.ySpin,
+                    zTiltRotations: tiltRotations * settings.zSpin,
                     rotation: rotation,
                     fadeOutEnd: fadeOutEnd
                 )
             )
 
-            let width = shape == .strip ? pieceSize * 0.3 : shape == .rect ? pieceSize * 0.7 : pieceSize
-            let height = shape == .strip ? pieceSize * 2 : pieceSize
-            let particleLayer = makeParticleLayer(shape: shape, color: color.cgColor, width: width, height: height)
+            let particleLayer = makeParticleLayer(
+                variant: variant,
+                fillColor: NSColor(shade.fill).cgColor,
+                strokeColor: NSColor(shade.stroke).cgColor,
+                size: pieceSize
+            )
             particleLayer.frame = CGRect(
                 x: Self.emissionPoint.x,
                 y: Self.emissionPoint.y,
-                width: width,
-                height: height
+                width: pieceSize,
+                height: pieceSize
             )
             particleContainer.addSublayer(particleLayer)
 
@@ -170,6 +184,26 @@ final class ConfettiBurstHostView: NSView {
             DispatchQueue.main.asyncAfter(deadline: .now() + settings.duration + 0.5) {
                 particleLayer.removeFromSuperlayer()
             }
+        }
+    }
+
+    private func pulseHero(to scale: Double, duration: Double) {
+        let scale = max(1, scale)
+        let duration = max(0.1, duration)
+        for hero in [heroLayer, heroCoverLayer] {
+            hero.removeAnimation(forKey: heroPulseAnimationKey)
+
+            let animation = CAKeyframeAnimation(keyPath: "transform.scale")
+            animation.values = [1, scale, 1]
+            animation.keyTimes = [0, 0.35, 1].map(NSNumber.init(value:))
+            animation.duration = duration
+            animation.timingFunctions = [
+                CAMediaTimingFunction(name: .easeOut),
+                CAMediaTimingFunction(controlPoints: 0.16, 1, 0.3, 1),
+            ]
+            animation.isRemovedOnCompletion = true
+
+            hero.add(animation, forKey: heroPulseAnimationKey)
         }
     }
 
@@ -203,97 +237,37 @@ final class ConfettiBurstHostView: NSView {
         return rep.cgImage
     }()
 
-    private func makeParticleLayer(shape: ConfettiShape, color: CGColor, width: Double, height: Double) -> CALayer {
-        if shape == .circle {
-            let layer = CAShapeLayer()
-            layer.path = blobPath(width: width, height: height)
-            layer.fillColor = color
-            return layer
+    private func makeParticleLayer(variant: ConfettiShapeVariant, fillColor: CGColor, strokeColor: CGColor, size: Double) -> CALayer {
+        let side = CGFloat(size)
+        let bounds = CGRect(x: 0, y: 0, width: side, height: side)
+
+        guard let shapePaths = ConfettiShapeArt.paths(for: variant, in: bounds) else {
+            let fallback = CALayer()
+            fallback.backgroundColor = fillColor
+            fallback.cornerRadius = side / 2
+            return fallback
         }
 
-        if shape == .star {
-            let layer = CAShapeLayer()
-            layer.path = starPath(width: width, height: height)
-            layer.fillColor = color
-            return layer
+        let container = CALayer()
+        container.bounds = bounds
+
+        let fillLayer = CAShapeLayer()
+        fillLayer.path = shapePaths.fill
+        fillLayer.fillColor = fillColor
+
+        let strokeLayer = CAShapeLayer()
+        strokeLayer.path = shapePaths.stroke
+        strokeLayer.fillColor = strokeColor
+
+        if variant.clipStrokeToFill {
+            let clipMask = CAShapeLayer()
+            clipMask.path = shapePaths.fill
+            clipMask.fillColor = NSColor.black.cgColor
+            strokeLayer.mask = clipMask
         }
 
-        if shape == .triangle {
-            let layer = CAShapeLayer()
-            layer.path = trianglePath(width: width, height: height)
-            layer.fillColor = color
-            return layer
-        }
-
-        let layer = CALayer()
-        layer.backgroundColor = color
-        if shape == .strip {
-            layer.cornerRadius = CGFloat(min(width, height) / 2)
-        } else {
-            layer.cornerRadius = CGFloat(max(4, min(width, height) * 0.5))
-        }
-        return layer
-    }
-
-    private func blobPath(width: Double, height: Double) -> CGPath {
-        let points = [
-            CGPoint(x: 0.5, y: 0.0),
-            CGPoint(x: 0.69, y: 0.08),
-            CGPoint(x: 0.92, y: 0.24),
-            CGPoint(x: 1.0, y: 0.49),
-            CGPoint(x: 0.86, y: 0.76),
-            CGPoint(x: 0.63, y: 0.97),
-            CGPoint(x: 0.38, y: 0.94),
-            CGPoint(x: 0.13, y: 0.82),
-            CGPoint(x: 0.02, y: 0.58),
-            CGPoint(x: 0.09, y: 0.29),
-            CGPoint(x: 0.28, y: 0.07),
-        ]
-        let path = CGMutablePath()
-        for (index, point) in points.enumerated() {
-            let mapped = CGPoint(x: point.x * width, y: point.y * height)
-            if index == 0 {
-                path.move(to: mapped)
-            } else {
-                path.addLine(to: mapped)
-            }
-        }
-        path.closeSubpath()
-        return path
-    }
-
-    private func starPath(width: Double, height: Double) -> CGPath {
-        let points = [
-            CGPoint(x: 0.5, y: 0.0),
-            CGPoint(x: 0.61, y: 0.35),
-            CGPoint(x: 0.98, y: 0.35),
-            CGPoint(x: 0.68, y: 0.56),
-            CGPoint(x: 0.79, y: 0.91),
-            CGPoint(x: 0.5, y: 0.7),
-            CGPoint(x: 0.21, y: 0.91),
-            CGPoint(x: 0.32, y: 0.56),
-            CGPoint(x: 0.02, y: 0.35),
-            CGPoint(x: 0.39, y: 0.35),
-        ]
-        let path = CGMutablePath()
-        for (index, point) in points.enumerated() {
-            let mapped = CGPoint(x: point.x * width, y: point.y * height)
-            if index == 0 {
-                path.move(to: mapped)
-            } else {
-                path.addLine(to: mapped)
-            }
-        }
-        path.closeSubpath()
-        return path
-    }
-
-    private func trianglePath(width: Double, height: Double) -> CGPath {
-        let path = CGMutablePath()
-        path.move(to: CGPoint(x: width * 0.5, y: 0))
-        path.addLine(to: CGPoint(x: 0, y: height))
-        path.addLine(to: CGPoint(x: width, y: height))
-        path.closeSubpath()
-        return path
+        container.addSublayer(fillLayer)
+        container.addSublayer(strokeLayer)
+        return container
     }
 }

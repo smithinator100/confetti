@@ -16,6 +16,7 @@ final class ConfettiPhysicsTests: XCTestCase {
                 ticks: 150,
                 xTiltRotations: 0,
                 tiltRotations: 3,
+                zTiltRotations: 0,
                 rotation: 45,
                 fadeOutEnd: 0.8
             )
@@ -39,6 +40,7 @@ final class ConfettiPhysicsTests: XCTestCase {
                 ticks: 10,
                 xTiltRotations: 0,
                 tiltRotations: 0,
+                zTiltRotations: 0,
                 rotation: 0,
                 fadeOutEnd: 1
             )

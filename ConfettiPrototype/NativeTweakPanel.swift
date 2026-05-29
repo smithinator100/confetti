@@ -37,11 +37,22 @@ struct NativeTweakPanel: View {
                     sliderRow(title: "ySpin", valueText: valueWithSingleDecimal(settings.ySpin)) {
                         Slider(value: $settings.ySpin, in: 0...1, step: 0.1)
                     }
+                    sliderRow(title: "zSpin", valueText: valueWithSingleDecimal(settings.zSpin)) {
+                        Slider(value: $settings.zSpin, in: 0...1, step: 0.1)
+                    }
                     sliderRow(title: "size", valueText: valueWithSingleDecimal(settings.size)) {
-                        Slider(value: $settings.size, in: 0.5...2, step: 0.1)
+                        Slider(value: $settings.size, in: 0.5...3, step: 0.1)
                     }
                     sliderRow(title: "sizeVariation", valueText: valueWithSingleDecimal(settings.sizeVariation)) {
                         Slider(value: $settings.sizeVariation, in: 0...2, step: 0.1)
+                    }
+                    sliderRow(title: "pictogramScaleSize", valueText: valueWithSingleDecimal(settings.pictogramScaleSize)) {
+                        Slider(value: $settings.pictogramScaleSize, in: 1...1.5, step: 0.05)
+                            .accessibilityIdentifier("NativeTweakPictogramScaleSize")
+                    }
+                    sliderRow(title: "pictogramScaleDuration", valueText: valueWithSingleDecimal(settings.pictogramScaleDuration)) {
+                        Slider(value: $settings.pictogramScaleDuration, in: 0.1...1.2, step: 0.05)
+                            .accessibilityIdentifier("NativeTweakPictogramScaleDuration")
                     }
 
                     sectionTitle("shapes")
@@ -131,9 +142,9 @@ struct NativeTweakPanel: View {
             Spacer(minLength: 0)
 
             HStack(spacing: 3) {
-                ForEach(NativeConfettiSettings.colorFamilies[family] ?? [], id: \.description) { color in
+                ForEach(NativeConfettiSettings.colorFamilies[family] ?? [], id: \.self) { shade in
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(color)
+                        .fill(shade.fill)
                         .frame(width: 10, height: 10)
                         .overlay(
                             RoundedRectangle(cornerRadius: 2)

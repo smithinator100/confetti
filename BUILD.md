@@ -138,7 +138,7 @@ _2026-05-28: Bundled `motion@12.40.0` locally as `motion.min.js`; ported COLORS/
 *As a user, I want the burst to look identical to the original component, so that the side-by-side comparison is fair.*
 
 **Acceptance criteria**
-- Defaults match `Confetti.tsx`: `particleCount=60`, `startVelocity=25`, `spread=100`, `decay=0.91`, `gravity=1`, `duration=2.5`
+- Defaults now use the tuned baseline from the side-by-side tweak panel: `particleCount=60`, `startVelocity=25`, `spread=100`, `decay=0.91`, `gravity=1.3`, `duration=2.5`, `fadeOutVariance=0.6`, `xSpin=0`, `ySpin=0`, `size=1.4`, `sizeVariation=1.2`
 - All five shapes render: `circle`, `rect`, `strip`, `star`, `triangle`
 - Tweak panel checkboxes can include/exclude each shape
 - Color palette uses the requested Mandarin, Pondwater, Lilypad, Blossom, and Pollen families, with tweak-panel checkboxes to include/exclude each family
@@ -149,6 +149,7 @@ _2026-05-28: Palette updated from the original 7-color reference to five named 3
 _2026-05-28: Shape rendering now rounds rectangle/strip corners proportionally and exposes Circle/Rectangle/Strip checkboxes in the tweak panel while preserving the default weighted distribution._
 _2026-05-28: Increased rectangle rounding and made strips fully pill-shaped so corner rounding is visible at default particle sizes._
 _2026-05-28: Added Star and Triangle particles using static clip-path masks and exposed both in the shape tweak checkboxes._
+_2026-05-29: Updated default tuning to the latest panel baseline (`gravity=1.3`, `fadeOutVariance=0.6`, `xSpin=0`, `ySpin=0`, `size=1.4`, `sizeVariation=1.2`) and added `zSpin` as a tweakable axis control._
 
 ### ✅ Story 3.3 — Transparent integration with window
 *As a user, I want particles to render seamlessly against the app background, so that there's no visible seam at the WebView edge.*
@@ -160,6 +161,7 @@ _2026-05-28: Added Star and Triangle particles using static clip-path masks and 
 
 _2026-05-28: `confetti.html` now uses transparent page background with `meta color-scheme=light`; particles render from the burst layer behind the hero without button-bounds clipping. `xcodebuild build` and `xcodebuild test -scheme ConfettiPrototype -destination 'platform=macOS'` pass, including `test_webConfettiButton_tapDoesNotCrash`._
 _2026-05-29: Added burst depth — particles render in a single front layer (`#particle-layer`); an identical pictogram cover (`#hero-cover`) is shown on top for `FRONT_TRANSITION_MS` (200ms) then hidden, so the initial pop reads as bursting from behind the pictogram and the confetti rains down in front of it. (First tried reparenting particles between behind/front layers, but moving a live node froze its animation — replaced with the cover technique.)_
+_2026-05-29: Added `pictogramScaleSize` and `pictogramScaleDuration` tweak controls plus a web-side hero pulse on each button press; the pictogram scales up to the configured multiplier then settles back to 1× with a slower ease-out._
 
 ---
 
@@ -176,7 +178,7 @@ Goal: clicking the right button fires a native burst visually paired with the we
 
 **Acceptance criteria**
 - App split is now 50/50 (`WebPane` and `NativePane` equal width) so each side can host tweak controls + preview
-- Native pane renders a left-column tweak panel matching the web control set (`particleCount`, `startVelocity`, `spread`, `decay`, `gravity`, `duration`, `fadeOutVariance`, `size`, `sizeVariation`)
+- Native pane renders a left-column tweak panel matching the web control set (`particleCount`, `startVelocity`, `spread`, `decay`, `gravity`, `duration`, `fadeOutVariance`, `xSpin`, `ySpin`, `zSpin`, `size`, `sizeVariation`)
 - Native panel includes shape and color-family toggles for Circle/Rectangle/Strip/Star/Triangle and Mandarin/Pondwater/Lilypad/Blossom/Pollen
 
 _2026-05-28: `ContentView` switched to equal-width panes, `NativeTweakPanel` added, and `NativeConfettiSettings` wired as the native single source of truth._
@@ -203,6 +205,56 @@ _2026-05-28: Added `ConfettiBurstView` (`NSViewRepresentable`) that creates per-
 
 _2026-05-28: Native burst host uses flipped coordinates and web-matched stage constants/insets; keyframe math mirrors web formulas for arc/timing/opacity behavior._
 _2026-05-29: Burst depth added to match the web. `ConfettiBurstHostView` now draws the hero pictogram (rasterized SVG) under a single `particleContainer`, with a `heroCoverLayer` shown on top for `frontTransitionDelay` (0.2s) then hidden — so the pop reads as behind the pictogram and the rain in front, without reparenting (which interrupts CA animations). The hero is now rendered by the host (removed the separate SwiftUI hero `Image` from `NativePane`)._
+_2026-05-29: Added matching native `pictogramScaleSize`/`pictogramScaleDuration` controls and Core Animation pulse for `heroLayer`/`heroCoverLayer` on each button press, with a slower ease-out settle._
+
+---
+
+## ✅ Epic 6 — Confetti shape & color refresh
+
+Goal: update web and native particles to the latest Figma shape silhouettes and two-tone color schemes.
+
+**Status:** Web and native now use the same four hand-drawn shape families (Star, Blob, Rectangle, Strip), each with three Figma variants, and sample colors from five 3-step fill+outline shade families (Mandarin, Pondwater, Lilypad, Blossom, Pollen).
+
+### ✅ Story 6.1 — Replace confetti shape art and shade system
+*As a user, I want both panes to use the updated Figma particle shapes and color pairings, so that the side-by-side comparison matches the latest design language.*
+
+**Acceptance criteria**
+- Replace Circle/Triangle with Blob and keep Star/Rectangle/Strip; both panes expose only Star/Blob/Rectangle/Strip toggles
+- Render particles as two-tone shape art (fill + darker outline) using Figma path geometry, not simple rounded-div approximations
+- Use 5 color families with 3 shade pairs each, where each shade is a `(fill, outline)` pair
+- Keep web and native renderers in lockstep (same shape family set, same color-family set, same burst controls and sampling behavior)
+
+_2026-05-29: Added `ConfettiShapeArt.swift` (12 Figma variants with SVG-path parsing), rewired native layering to fill+outline `CAShapeLayer`s with mask support for inside-stroke variants, and rewired web particles to inline SVG variants using CSS variables (`--fill-0`, `--stroke-0`). Updated shape toggles and family swatches to Star/Blob/Rectangle/Strip + new shade pairs across web/native/tests._
+
+---
+
+## ✅ Epic 7 — Reusable confetti components
+
+Goal: package the confetti effect as reusable single-file components for TypeScript and native iOS.
+
+**Status:** Standalone reusable components now exist in `confetti/confetti.tsx` and `confetti/confetti.swift`, each accepting a pictogram path, exposing the tweak-panel parameter surface, and rendering a pictogram-sized overflow-visible burst container so particles can travel outside bounds.
+
+### ✅ Story 7.1 — Reusable TypeScript component
+*As a developer, I want a single-file `confetti.tsx` component that I can drop into React projects, so that I can reuse the confetti behavior outside this prototype.*
+
+**Acceptance criteria**
+- `confetti/confetti.tsx` is self-contained in one file
+- Accepts a pictogram path and keeps the component container equal to pictogram size
+- Exposes burst tuning controls equivalent to tweak panel settings as props
+- Supports behind-pictogram pop using a temporary cover layer before front-rain phase
+
+_2026-05-29: Shipped as `confetti/confetti.tsx` with imperative `fire()` handle, typed config props (`particleCount`, `startVelocity`, `spread`, `decay`, `gravity`, `duration`, `fadeOutVariance`, `xSpin`, `ySpin`, `zSpin`, `size`, `sizeVariation`, `pictogramScaleSize`, `pictogramScaleDuration`, shape/color filters), and pictogram-sized overflow-visible burst geometry._
+
+### ✅ Story 7.2 — Reusable native iOS component
+*As a developer, I want a single-file `confetti.swift` UIKit view, so that I can reuse the native confetti behavior in iOS apps.*
+
+**Acceptance criteria**
+- `confetti/confetti.swift` is self-contained in one file
+- Accepts a pictogram path and keeps the component container equal to pictogram size
+- Exposes burst tuning controls equivalent to tweak panel settings as configuration
+- Provides a trigger API to fire bursts repeatedly without backlog buildup
+
+_2026-05-29: Shipped as `confetti/confetti.swift` with `ConfettiConfiguration` + `ConfettiView.fire()`, overflow-visible pictogram-sized geometry, and iOS typecheck verified via `xcrun -sdk iphonesimulator swiftc -typecheck confetti/confetti.swift -target arm64-apple-ios15.0-simulator`. Constraint: `UIImage` requires raster pictogram assets (PNG/JPEG), not SVG._
 
 ---
 

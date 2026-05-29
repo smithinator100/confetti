@@ -12,6 +12,7 @@ The repo also includes reusable single-file components for React and UIKit in `c
 - `ConfettiPrototype/` - SwiftUI macOS comparison app.
 - `ConfettiPrototype/Resources/confetti.html` - bundled web preview used by the left pane.
 - `ConfettiPrototype/ConfettiBurstView.swift` - native macOS preview used by the right pane.
+- `web/index.html` - standalone static web version ready to deploy to Vercel.
 - `confetti/confetti.tsx` - reusable React component.
 - `confetti/confetti.swift` - reusable UIKit component for iOS.
 - `BUILD.md` - story plan and implementation notes.
@@ -50,6 +51,20 @@ xcodebuild test -scheme ConfettiPrototype -destination 'platform=macOS'
 ```
 
 The app opens a two-pane window. The left pane renders the web confetti in a `WKWebView`; the right pane renders native particles with Core Animation.
+
+## Run The Web Version
+
+Serve the standalone page from the `web/` folder:
+
+```sh
+python3 -m http.server 4173 --directory web
+```
+
+Deploy from that folder with the Vercel CLI:
+
+```sh
+vercel --cwd web
+```
 
 ## How The Confetti Works
 

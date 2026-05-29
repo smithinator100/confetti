@@ -29,7 +29,11 @@ Naming conventions for the Confetti Prototype. Update this file whenever a new c
 ## Reference assets
 
 - **`Confetti.tsx`** at repo root — source-of-truth React component for Epic 3 web confetti physics. Treat as read-only reference; port into `confetti.html` rather than importing.
-- **Particle tweak controls:** numeric sliders and filters exposed in `confetti.html` tweak panel — e.g. `fadeOutVariance`, `xSpin`, `ySpin`, Mandarin/Pondwater/Lilypad/Blossom/Pollen, and Circle/Rectangle/Strip/Star/Triangle.
+- **Reusable component deliverables:** ship standalone single-file components in `confetti/` as lowercase `confetti.tsx` (React) and `confetti.swift` (UIKit). Folder is required because case-insensitive filesystems cannot hold both `Confetti.tsx` and root `confetti.tsx`.
+- **Static web deploy:** `web/index.html` is the standalone Vercel-ready web page. Keep it dependency-free and self-contained when possible.
+- **Reusable pictogram path rule (iOS):** `confetti/confetti.swift` loads pictograms with `UIImage`, so caller-provided paths must point to raster assets (PNG/JPEG), not SVG.
+- **Particle tweak controls:** numeric sliders and filters exposed in `confetti.html` tweak panel — e.g. `fadeOutVariance`, `xSpin`, `ySpin`, `zSpin`, `pictogramScaleSize`, `pictogramScaleDuration`, Mandarin/Pondwater/Lilypad/Blossom/Pollen, and Star/Blob/Rectangle/Strip.
+- **Shape art source:** hand-drawn particle silhouettes live as shared Figma path data in `ConfettiShapeArt.swift` (native) and mirrored `SHAPE_VARIANTS` path data in `confetti.html` (web). Each variant is two-tone (`fillPath` + `strokePath`) and may clip stroke to fill for inside-stroke art.
 - **Physics lockstep rule:** keep confetti constants and formulas aligned between web `confetti.html` and native `ConfettiPhysics.swift` (at minimum `KEYFRAME_STEPS`, `SCALE_DURATION_FRACTION`, fade-out segmentation, and trajectory update equations).
 - **Burst depth layering:** particles always render in a single layer *in front* of the hero pictogram. To make the initial pop read as bursting from *behind* it, an identical pictogram "cover" is shown on top for a short delay, then hidden so the rain falls in front. (Reparenting live particles between layers interrupts their animation — don't.) Web: persistent `.hero` + front `#particle-layer` + toggled `#hero-cover`, timed by `FRONT_TRANSITION_MS`. Native: host draws `heroLayer` (persistent) under `particleContainer` with `heroCoverLayer` on top, timed by `frontTransitionDelay`. Keep the delay aligned across web/native (currently ~200ms).
 

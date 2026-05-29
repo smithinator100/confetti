@@ -17,6 +17,7 @@ enum ConfettiPhysics {
         let ticks: Int
         let xTiltRotations: Double
         let tiltRotations: Double
+        let zTiltRotations: Double
         let rotation: Double
         let fadeOutEnd: Double
     }
@@ -57,7 +58,7 @@ enum ConfettiPhysics {
             let scale = computeScale(progress: t)
             let rotateX = degreesToRadians(input.xTiltRotations * 360 * t)
             let rotateY = degreesToRadians(input.tiltRotations * 360 * t)
-            let rotateZ = degreesToRadians(input.rotation)
+            let rotateZ = degreesToRadians(input.rotation + input.zTiltRotations * 360 * t)
             let opacity = computeOpacity(
                 progress: t,
                 fadeOutStart: fadeOutStart,
