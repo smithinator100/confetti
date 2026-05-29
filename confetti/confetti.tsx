@@ -5,8 +5,8 @@ import {
     forwardRef,
     useCallback,
     useEffect,
-    useId,
     useImperativeHandle,
+    useMemo,
     useRef,
     useState,
 } from "react"
@@ -94,7 +94,7 @@ const DEFAULT_CONFIG: Required<Omit<ConfettiProps, "pictogramPath">> = {
 const WEIGHTED_SHAPES: ConfettiShape[] = ["star", "blob", "rect", "rect", "strip", "strip"]
 const KEYFRAME_STEPS = 40
 const SCALE_DURATION_FRACTION = 0.08
-const SVG_NS = "http://www.w3.org/2000/svg"
+const RASTER_PX = 96
 
 const COLOR_FAMILIES: Record<ConfettiColorFamily, ConfettiShade[]> = {
     mandarin: [
@@ -163,29 +163,17 @@ const SHAPE_VARIANTS: Record<ConfettiShape, ConfettiShapeVariant[]> = {
     ],
 }
 
-const CLIPPED_SHAPE_VARIANTS: Array<{
-    shape: ConfettiShape
-    variantIndex: number
-    fillPath: string
-}> = []
-
-for (const shape of Object.keys(SHAPE_VARIANTS) as ConfettiShape[]) {
-    SHAPE_VARIANTS[shape].forEach((variant, variantIndex) => {
-        if (!variant.clipStrokeToFill) return
-        CLIPPED_SHAPE_VARIANTS.push({ shape, variantIndex, fillPath: variant.fillPath })
-    })
-}
-
 export const Confetti = forwardRef<ConfettiHandle, ConfettiProps>(function Confetti(
     props,
     ref,
 ) {
-    const configuration = { ...DEFAULT_CONFIG, ...props }
-    const clipIdPrefix = useId().replace(/:/g, "-")
+    const configuration = useMemo(() => ({ ...DEFAULT_CONFIG, ...props }), [props])
     const particleRootRef = useRef<HTMLDivElement>(null)
     const coverTimeoutRef = useRef<number>()
     const pulseTimeoutRef = useRef<number>()
-    const particleTemplateCacheRef = useRef<Map<string, SVGSVGElement>>(new Map())
+    const removalTimeoutRef = useRef<number>()
+    const activeNodesRef = useRef<HTMLDivElement[]>([])
+    const bitmapCacheRef = useRef<Map<string, string>>(new Map())
     const [isCoverVisible, setIsCoverVisible] = useState(false)
     const [heroScale, setHeroScale] = useState(1)
 
@@ -195,6 +183,12 @@ export const Confetti = forwardRef<ConfettiHandle, ConfettiProps>(function Confe
 
         if (coverTimeoutRef.current) window.clearTimeout(coverTimeoutRef.current)
         if (pulseTimeoutRef.current) window.clearTimeout(pulseTimeoutRef.current)
+
+        if (removalTimeoutRef.current) window.clearTimeout(removalTimeoutRef.current)
+        activeNodesRef.current.forEach((node) => {
+            if (node.parentNode) node.parentNode.removeChild(node)
+        })
+        activeNodesRef.current = []
 
         setIsCoverVisible(true)
         setHeroScale(configuration.pictogramScaleSize)
@@ -223,6 +217,7 @@ export const Confetti = forwardRef<ConfettiHandle, ConfettiProps>(function Confe
             keyframes: ReturnType<typeof computeKeyframes>
         }> = []
         const fragment = document.createDocumentFragment()
+        const bitmapCache = bitmapCacheRef.current
 
         for (let index = 0; index < configuration.particleCount; index += 1) {
             const spreadRadians = configuration.spread * (Math.PI / 180)
@@ -262,26 +257,23 @@ export const Confetti = forwardRef<ConfettiHandle, ConfettiProps>(function Confe
                 fadeOutEnd,
             })
 
+            const bitmapKey = `${shape}-${variantIndex}-${shade.fill}-${shade.stroke}`
+            let bitmap = bitmapCache.get(bitmapKey)
+            if (!bitmap) {
+                bitmap = rasterizeVariant(variant, shade)
+                bitmapCache.set(bitmapKey, bitmap)
+            }
+            if (!bitmap) continue
+
             const node = document.createElement("div")
             node.style.position = "absolute"
             node.style.width = `${pieceSize}px`
             node.style.height = `${pieceSize}px`
             node.style.pointerEvents = "none"
             node.style.willChange = "transform, opacity"
-            node.style.setProperty("--fill-0", shade.fill)
-            node.style.setProperty("--stroke-0", shade.stroke)
-            const variantKey = getVariantCacheKey(shape, variantIndex)
-            const cachedTemplate = particleTemplateCacheRef.current.get(variantKey)
-            const template =
-                cachedTemplate ??
-                createShapeTemplateNode(
-                    variant,
-                    variant.clipStrokeToFill
-                        ? getVariantClipId(clipIdPrefix, shape, variantIndex)
-                        : undefined,
-                )
-            if (!cachedTemplate) particleTemplateCacheRef.current.set(variantKey, template)
-            node.appendChild(template.cloneNode(true))
+            node.style.backgroundImage = `url("${bitmap}")`
+            node.style.backgroundSize = "100% 100%"
+            node.style.backgroundRepeat = "no-repeat"
 
             fragment.appendChild(node)
             createdNodes.push({ node, keyframes })
@@ -295,12 +287,15 @@ export const Confetti = forwardRef<ConfettiHandle, ConfettiProps>(function Confe
             })
         })
 
-        window.setTimeout(() => {
+        activeNodesRef.current = createdNodes.map(({ node }) => node)
+        removalTimeoutRef.current = window.setTimeout(() => {
             createdNodes.forEach(({ node }) => {
                 if (node.parentNode) node.parentNode.removeChild(node)
             })
+            activeNodesRef.current = []
+            removalTimeoutRef.current = undefined
         }, (configuration.duration + 0.5) * 1000)
-    }, [clipIdPrefix, configuration])
+    }, [configuration])
 
     useImperativeHandle(ref, () => ({ fire }), [fire])
 
@@ -308,6 +303,7 @@ export const Confetti = forwardRef<ConfettiHandle, ConfettiProps>(function Confe
         return () => {
             if (coverTimeoutRef.current) window.clearTimeout(coverTimeoutRef.current)
             if (pulseTimeoutRef.current) window.clearTimeout(pulseTimeoutRef.current)
+            if (removalTimeoutRef.current) window.clearTimeout(removalTimeoutRef.current)
         }
     }, [])
 
@@ -346,29 +342,6 @@ export const Confetti = forwardRef<ConfettiHandle, ConfettiProps>(function Confe
                     overflow: "visible",
                 }}
             />
-            <svg
-                aria-hidden
-                width={0}
-                height={0}
-                style={{
-                    position: "absolute",
-                    width: 0,
-                    height: 0,
-                    overflow: "hidden",
-                    pointerEvents: "none",
-                }}
-            >
-                <defs>
-                    {CLIPPED_SHAPE_VARIANTS.map(({ shape, variantIndex, fillPath }) => {
-                        const clipId = getVariantClipId(clipIdPrefix, shape, variantIndex)
-                        return (
-                            <clipPath id={clipId} key={clipId}>
-                                <path d={fillPath} />
-                            </clipPath>
-                        )
-                    })}
-                </defs>
-            </svg>
             <img
                 src={props.pictogramPath}
                 alt=""
@@ -387,38 +360,44 @@ export const Confetti = forwardRef<ConfettiHandle, ConfettiProps>(function Confe
     )
 })
 
-function getVariantCacheKey(shape: ConfettiShape, variantIndex: number) {
-    return `${shape}-${variantIndex}`
-}
+// Pre-rasterize a shape variant + color pair into a PNG data URL. A bitmap
+// background is composited as a static GPU texture, so rotating/scaling a
+// particle costs nothing to re-raster, unlike inline SVG whose vector paths
+// re-rasterize whenever the layer's scale changes mid-animation.
+function rasterizeVariant(variant: ConfettiShapeVariant, shade: ConfettiShade): string {
+    const canvas = document.createElement("canvas")
+    canvas.width = RASTER_PX
+    canvas.height = RASTER_PX
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return ""
+    ctx.scale(RASTER_PX / 40, RASTER_PX / 40)
 
-function getVariantClipId(idPrefix: string, shape: ConfettiShape, variantIndex: number) {
-    return `${idPrefix}-shape-clip-${shape}-${variantIndex}`
-}
+    const fillPath = new Path2D(variant.fillPath)
+    ctx.fillStyle = shade.fill
+    ctx.fill(fillPath)
 
-function createShapeTemplateNode(variant: ConfettiShapeVariant, clipId?: string): SVGSVGElement {
-    const svg = document.createElementNS(SVG_NS, "svg")
-    svg.setAttribute("viewBox", "0 0 40 40")
-    svg.setAttribute("width", "100%")
-    svg.setAttribute("height", "100%")
-    svg.setAttribute("preserveAspectRatio", "none")
+    const strokePath = new Path2D(variant.strokePath)
+    ctx.fillStyle = shade.stroke
+    if (variant.clipStrokeToFill) {
+        ctx.save()
+        ctx.clip(fillPath)
+        ctx.fill(strokePath)
+        ctx.restore()
+    } else {
+        ctx.fill(strokePath)
+    }
 
-    const fillPath = document.createElementNS(SVG_NS, "path")
-    fillPath.setAttribute("d", variant.fillPath)
-    fillPath.setAttribute("fill", "var(--fill-0)")
-    svg.appendChild(fillPath)
-
-    const strokePath = document.createElementNS(SVG_NS, "path")
-    strokePath.setAttribute("d", variant.strokePath)
-    strokePath.setAttribute("fill", "var(--stroke-0)")
-    if (clipId) strokePath.setAttribute("clip-path", `url(#${clipId})`)
-    svg.appendChild(strokePath)
-
-    return svg
+    return canvas.toDataURL()
 }
 
 function computeKeyframes(input: ConfettiPhysicsInput) {
     const fadeOutStart = Math.max(0, input.fadeOutEnd - 0.5)
     const fadeOutMid = fadeOutStart + (input.fadeOutEnd - fadeOutStart) * 0.6
+
+    // Only emit rotateX/rotateY when actually spinning in 3D; their presence
+    // forces each particle layer into a heavier 3D rendering context.
+    const includeX = input.xTiltRotations !== 0
+    const includeY = input.tiltRotations !== 0
 
     const transform: string[] = []
     const opacity: number[] = []
@@ -452,8 +431,6 @@ function computeKeyframes(input: ConfettiPhysicsInput) {
             scale = 1.15 - st * 0.15
         }
 
-        const rotateX = input.xTiltRotations * 360 * t
-        const rotateY = input.tiltRotations * 360 * t
         const rotateZ = input.zTiltRotations * 360 * t + input.rotation
 
         let opacityFrame = 0
@@ -465,9 +442,11 @@ function computeKeyframes(input: ConfettiPhysicsInput) {
             opacityFrame = 0.5 - ((t - fadeOutMid) / (input.fadeOutEnd - fadeOutMid)) * 0.5
         }
 
-        transform.push(
-            `translate(${wx}px, ${wy}px) scale(${scale}) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotate(${rotateZ}deg)`,
-        )
+        let transformFrame = `translate(${wx}px, ${wy}px) scale(${scale})`
+        if (includeX) transformFrame += ` rotateX(${input.xTiltRotations * 360 * t}deg)`
+        if (includeY) transformFrame += ` rotateY(${input.tiltRotations * 360 * t}deg)`
+        transformFrame += ` rotate(${rotateZ}deg)`
+        transform.push(transformFrame)
         opacity.push(opacityFrame)
     }
 
