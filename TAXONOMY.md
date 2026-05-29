@@ -55,6 +55,14 @@ Naming conventions for the Confetti Prototype. Update this file whenever a new c
 - **Project generator:** `XcodeGen` — edit `project.yml` at repo root, then run `xcodegen generate` to regenerate `ConfettiPrototype.xcodeproj`
 - **Install:** `brew install xcodegen`
 
+## Performance tooling
+
+- **In-page FPS probe:** `confetti.html` renders a corner `#fps-meter` overlay and runs a `requestAnimationFrame` sampler (`runFpsProbe`) per burst, reporting avg/min FPS and dropped frames (frames >33ms). It also logs a `[confetti fps]` console line.
+- **Chunked spawn:** particles are built + started in chunks of 20, one chunk per frame, so no single frame absorbs the whole spawn cost (keeps burst-start min-FPS up at high particle counts). Kept in lockstep across web and native: web `handleBurst` uses `SPAWN_CHUNK` + `requestAnimationFrame` (tracked by `spawnHandle`); native `ConfettiBurstHostView` uses `spawnChunkSize` + per-frame `DispatchQueue.main.asyncAfter` (tracked by `spawnWorkItem`). A re-fire cancels the in-flight spawn on both sides.
+- **Bitmap prewarm:** the full shape×variant×color matrix is rasterized once at load so the rasterize cost never lands on a burst frame. Web: `prewarmParticleBitmaps()` (`canvas.toDataURL`). Native: `prewarmParticleBitmaps()` in `ConfettiBurstHostView.init` (`CGContext` path fill).
+- **Benchmark hook:** `window.__confettiBench(count, durationMs)` (in `confetti.html`) fires a burst at a given particle count and resolves with the probe metrics — the automation entry point. Don't call it from app UI; it mutates `settings`.
+- **Benchmark harness:** `tools/confetti-bench.swift` — standalone script run via `swift tools/confetti-bench.swift [count ...]` (override window with env `CONFETTI_BENCH_MS`). Drives `confetti.html` in a real on-screen `WKWebView` and prints a markdown FPS table. Must run from a logged-in GUI session — offscreen WebKit views throttle rAF and report false numbers.
+
 ## Packaging
 
 - **DMG output:** `ConfettiPrototype.dmg`

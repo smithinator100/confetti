@@ -23,11 +23,16 @@ final class ConfettiBurstHostView: NSView {
     private static let emissionPoint = CGPoint(x: 201, y: 192)
     private static let stageCornerRadius: CGFloat = 56
     private static let heroFrame = CGRect(x: 147, y: 138, width: 108, height: 108)
+    private static let rasterPixelSize: CGFloat = 96
     // How long particles stay behind the hero (the initial pop) before
     // moving to the front layer to rain down in front of it.
     // How long the hero cover stays up (the initial pop) before it is removed
     // so the confetti rains down in front of the pictogram.
     private static let frontTransitionDelay: TimeInterval = 0.2
+    // Build + animate this many particles per frame so no single frame absorbs
+    // the whole spawn cost (the burst-start min-FPS spike). Mirrors the web
+    // SPAWN_CHUNK in confetti.html.
+    private static let spawnChunkSize = 20
 
     var currentSettings: NativeConfettiSettingsSnapshot = NativeConfettiSettings().snapshot
     var lastBurstID: Int = 0
@@ -41,6 +46,18 @@ final class ConfettiBurstHostView: NSView {
     private let heroCoverLayer = CALayer()
     private let heroPulseAnimationKey = "hero-pulse"
     private var coverGeneration = 0
+    private var activeParticleLayers: [CALayer] = []
+    private var removalWorkItem: DispatchWorkItem?
+    private var particleBitmapCache: [String: CGImage] = [:]
+
+    // In-flight chunked spawn state. spawnWorkItem is the next scheduled chunk
+    // so a re-fire can cancel it (mirrors the web spawnHandle).
+    private var spawnWorkItem: DispatchWorkItem?
+    private var spawnRemaining = 0
+    private var spawnSettings: NativeConfettiSettingsSnapshot?
+    private var spawnShapes: [ConfettiShape] = []
+    private var spawnShades: [ConfettiShade] = []
+    private var spawnTicks = 0
 
     override var isFlipped: Bool { true }
 
@@ -61,6 +78,8 @@ final class ConfettiBurstHostView: NSView {
         layer?.addSublayer(heroLayer)
         layer?.addSublayer(particleContainer)
         layer?.addSublayer(heroCoverLayer)
+
+        prewarmParticleBitmaps()
     }
 
     @available(*, unavailable)
@@ -99,6 +118,14 @@ final class ConfettiBurstHostView: NSView {
             return
         }
 
+        removalWorkItem?.cancel()
+        removalWorkItem = nil
+        spawnWorkItem?.cancel()
+        spawnWorkItem = nil
+        spawnRemaining = 0
+        activeParticleLayers.forEach { $0.removeFromSuperlayer() }
+        activeParticleLayers.removeAll(keepingCapacity: true)
+
         let ticks = Int(round(settings.duration * 60))
 
         coverGeneration += 1
@@ -113,78 +140,121 @@ final class ConfettiBurstHostView: NSView {
             CATransaction.commit()
         }
 
-        for _ in 0..<settings.particleCount {
-            let spreadRadians = settings.spread * (.pi / 180)
-            let angle = -Double.pi / 2 + (0.5 * spreadRadians - Double.random(in: 0...spreadRadians))
-            let velocity = settings.startVelocity * 0.5 + Double.random(in: 0...settings.startVelocity)
-            let wobbleSpeed = min(0.11, Double.random(in: 0...0.1) + 0.05)
-            let wobbleOffset = Double.random(in: 0...10)
-            let pieceSize = 6 * settings.size + Double.random(in: 0...(6 * settings.size * settings.sizeVariation))
-            let sizeDepth = pieceSize / max(6 * settings.size, 1)
-            let depthGravity = settings.gravity * (1 + (sizeDepth - 1) * 0.35)
-            let tiltRotations = 2 + Double.random(in: 0...4)
-            let rotation = Double.random(in: 0...360)
-            let fadeOutEnd = 1 - Double.random(in: 0...settings.fadeOutVariance)
+        // Spread the spawn across frames (see spawnChunkSize). Mirrors the web
+        // confetti's chunked, frame-aligned spawn so the burst start doesn't
+        // block one frame building + animating every particle at once.
+        spawnSettings = settings
+        spawnShapes = activeShapes
+        spawnShades = activeShades
+        spawnTicks = ticks
+        spawnRemaining = settings.particleCount
+        scheduleSpawnChunk()
+    }
 
-            guard let shape = activeShapes.randomElement(),
-                  let shade = activeShades.randomElement(),
-                  let variant = ConfettiShapeArt.randomVariant(for: shape) else { continue }
-
-            let keyframes = ConfettiPhysics.computeKeyframes(
-                .init(
-                    angle: angle,
-                    startVelocity: velocity,
-                    decay: settings.decay,
-                    gravity: depthGravity,
-                    drift: 0,
-                    wobbleSpeed: wobbleSpeed,
-                    wobbleOffset: wobbleOffset,
-                    size: settings.size,
-                    ticks: ticks,
-                    xTiltRotations: tiltRotations * settings.xSpin,
-                    tiltRotations: tiltRotations * settings.ySpin,
-                    zTiltRotations: tiltRotations * settings.zSpin,
-                    rotation: rotation,
-                    fadeOutEnd: fadeOutEnd
-                )
-            )
-
-            let particleLayer = makeParticleLayer(
-                variant: variant,
-                fillColor: NSColor(shade.fill).cgColor,
-                strokeColor: NSColor(shade.stroke).cgColor,
-                size: pieceSize
-            )
-            particleLayer.frame = CGRect(
-                x: Self.emissionPoint.x,
-                y: Self.emissionPoint.y,
-                width: pieceSize,
-                height: pieceSize
-            )
-            particleContainer.addSublayer(particleLayer)
-
-            let keyTimes = (0...ConfettiPhysics.keyframeSteps).map { NSNumber(value: Double($0) / Double(ConfettiPhysics.keyframeSteps)) }
-
-            let transformAnimation = CAKeyframeAnimation(keyPath: "transform")
-            transformAnimation.values = keyframes.transforms.map { NSValue(caTransform3D: $0) }
-            transformAnimation.keyTimes = keyTimes
-
-            let opacityAnimation = CAKeyframeAnimation(keyPath: "opacity")
-            opacityAnimation.values = keyframes.opacities.map(NSNumber.init(value:))
-            opacityAnimation.keyTimes = keyTimes
-
-            let group = CAAnimationGroup()
-            group.animations = [transformAnimation, opacityAnimation]
-            group.duration = settings.duration
-            group.timingFunction = CAMediaTimingFunction(name: .linear)
-            group.isRemovedOnCompletion = false
-            group.fillMode = .forwards
-            particleLayer.add(group, forKey: "burst")
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + settings.duration + 0.5) {
-                particleLayer.removeFromSuperlayer()
-            }
+    private func scheduleSpawnChunk() {
+        let work = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.spawnWorkItem = nil
+            self.runSpawnChunk()
         }
+        spawnWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 / 60.0, execute: work)
+    }
+
+    private func runSpawnChunk() {
+        guard let settings = spawnSettings, spawnRemaining > 0 else { return }
+        let count = min(Self.spawnChunkSize, spawnRemaining)
+        for _ in 0..<count {
+            spawnParticle(settings: settings, activeShapes: spawnShapes, activeShades: spawnShades, ticks: spawnTicks)
+        }
+        spawnRemaining -= count
+
+        if spawnRemaining > 0 {
+            scheduleSpawnChunk()
+            return
+        }
+
+        let layersToRemove = activeParticleLayers
+        let workItem = DispatchWorkItem { [weak self] in
+            layersToRemove.forEach { $0.removeFromSuperlayer() }
+            guard let self else { return }
+            if self.activeParticleLayers.elementsEqual(layersToRemove, by: { $0 === $1 }) {
+                self.activeParticleLayers.removeAll(keepingCapacity: true)
+            }
+            self.removalWorkItem = nil
+        }
+        removalWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + settings.duration + 0.5, execute: workItem)
+    }
+
+    private func spawnParticle(
+        settings: NativeConfettiSettingsSnapshot,
+        activeShapes: [ConfettiShape],
+        activeShades: [ConfettiShade],
+        ticks: Int
+    ) {
+        let spreadRadians = settings.spread * (.pi / 180)
+        let angle = -Double.pi / 2 + (0.5 * spreadRadians - Double.random(in: 0...spreadRadians))
+        let velocity = settings.startVelocity * 0.5 + Double.random(in: 0...settings.startVelocity)
+        let wobbleSpeed = min(0.11, Double.random(in: 0...0.1) + 0.05)
+        let wobbleOffset = Double.random(in: 0...10)
+        let pieceSize = 6 * settings.size + Double.random(in: 0...(6 * settings.size * settings.sizeVariation))
+        let sizeDepth = pieceSize / max(6 * settings.size, 1)
+        let depthGravity = settings.gravity * (1 + (sizeDepth - 1) * 0.35)
+        let tiltRotations = 2 + Double.random(in: 0...4)
+        let rotation = Double.random(in: 0...360)
+        let fadeOutEnd = 1 - Double.random(in: 0...settings.fadeOutVariance)
+
+        guard let shape = activeShapes.randomElement(),
+              let shade = activeShades.randomElement(),
+              let variant = ConfettiShapeArt.randomVariant(for: shape) else { return }
+
+        let keyframes = ConfettiPhysics.computeKeyframes(
+            .init(
+                angle: angle,
+                startVelocity: velocity,
+                decay: settings.decay,
+                gravity: depthGravity,
+                drift: 0,
+                wobbleSpeed: wobbleSpeed,
+                wobbleOffset: wobbleOffset,
+                size: settings.size,
+                ticks: ticks,
+                xTiltRotations: tiltRotations * settings.xSpin,
+                tiltRotations: tiltRotations * settings.ySpin,
+                zTiltRotations: tiltRotations * settings.zSpin,
+                rotation: rotation,
+                fadeOutEnd: fadeOutEnd
+            )
+        )
+
+        let particleLayer = makeParticleLayer(shape: shape, variant: variant, shade: shade, size: pieceSize)
+        particleLayer.frame = CGRect(
+            x: Self.emissionPoint.x,
+            y: Self.emissionPoint.y,
+            width: pieceSize,
+            height: pieceSize
+        )
+        particleContainer.addSublayer(particleLayer)
+        activeParticleLayers.append(particleLayer)
+
+        let keyTimes = (0...ConfettiPhysics.keyframeSteps).map { NSNumber(value: Double($0) / Double(ConfettiPhysics.keyframeSteps)) }
+
+        let transformAnimation = CAKeyframeAnimation(keyPath: "transform")
+        transformAnimation.values = keyframes.transforms.map { NSValue(caTransform3D: $0) }
+        transformAnimation.keyTimes = keyTimes
+
+        let opacityAnimation = CAKeyframeAnimation(keyPath: "opacity")
+        opacityAnimation.values = keyframes.opacities.map(NSNumber.init(value:))
+        opacityAnimation.keyTimes = keyTimes
+
+        let group = CAAnimationGroup()
+        group.animations = [transformAnimation, opacityAnimation]
+        group.duration = settings.duration
+        group.timingFunction = CAMediaTimingFunction(name: .linear)
+        group.isRemovedOnCompletion = false
+        group.fillMode = .forwards
+        particleLayer.add(group, forKey: "burst")
     }
 
     private func pulseHero(to scale: Double, duration: Double) {
@@ -237,37 +307,84 @@ final class ConfettiBurstHostView: NSView {
         return rep.cgImage
     }()
 
-    private func makeParticleLayer(variant: ConfettiShapeVariant, fillColor: CGColor, strokeColor: CGColor, size: Double) -> CALayer {
+    private func makeParticleLayer(shape: ConfettiShape, variant: ConfettiShapeVariant, shade: ConfettiShade, size: Double) -> CALayer {
         let side = CGFloat(size)
         let bounds = CGRect(x: 0, y: 0, width: side, height: side)
+        let particleLayer = CALayer()
+        particleLayer.bounds = bounds
+        particleLayer.contentsGravity = .resize
+        particleLayer.contentsScale = 3
 
-        guard let shapePaths = ConfettiShapeArt.paths(for: variant, in: bounds) else {
-            let fallback = CALayer()
-            fallback.backgroundColor = fillColor
-            fallback.cornerRadius = side / 2
-            return fallback
+        if let bitmap = particleBitmap(for: shape, variant: variant, shade: shade) {
+            particleLayer.contents = bitmap
+            return particleLayer
         }
 
-        let container = CALayer()
-        container.bounds = bounds
+        particleLayer.backgroundColor = NSColor(shade.fill).cgColor
+        particleLayer.cornerRadius = side / 2
+        return particleLayer
+    }
 
-        let fillLayer = CAShapeLayer()
-        fillLayer.path = shapePaths.fill
-        fillLayer.fillColor = fillColor
+    // Rasterize every shape+variant+shade combination once at init so the
+    // expensive CGContext path fill never lands on a burst frame. Mirrors the
+    // web prewarmParticleBitmaps().
+    private func prewarmParticleBitmaps() {
+        for (shape, variants) in ConfettiShapeArt.variants {
+            for variant in variants {
+                for shades in NativeConfettiSettings.colorFamilies.values {
+                    for shade in shades {
+                        _ = particleBitmap(for: shape, variant: variant, shade: shade)
+                    }
+                }
+            }
+        }
+    }
 
-        let strokeLayer = CAShapeLayer()
-        strokeLayer.path = shapePaths.stroke
-        strokeLayer.fillColor = strokeColor
+    private func particleBitmap(for shape: ConfettiShape, variant: ConfettiShapeVariant, shade: ConfettiShade) -> CGImage? {
+        let fillColor = NSColor(shade.fill).cgColor
+        let strokeColor = NSColor(shade.stroke).cgColor
+        let key = [
+            shape.rawValue,
+            variant.fillPath,
+            variant.strokePath,
+            String(describing: fillColor),
+            String(describing: strokeColor),
+        ].joined(separator: "|")
+        if let cached = particleBitmapCache[key] { return cached }
 
+        let drawRect = CGRect(x: 0, y: 0, width: Self.rasterPixelSize, height: Self.rasterPixelSize)
+        guard let shapePaths = ConfettiShapeArt.paths(for: variant, in: drawRect) else { return nil }
+        guard let context = CGContext(
+            data: nil,
+            width: Int(Self.rasterPixelSize),
+            height: Int(Self.rasterPixelSize),
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            return nil
+        }
+
+        context.setFillColor(fillColor)
+        context.addPath(shapePaths.fill)
+        context.fillPath()
+
+        context.setFillColor(strokeColor)
         if variant.clipStrokeToFill {
-            let clipMask = CAShapeLayer()
-            clipMask.path = shapePaths.fill
-            clipMask.fillColor = NSColor.black.cgColor
-            strokeLayer.mask = clipMask
+            context.saveGState()
+            context.addPath(shapePaths.fill)
+            context.clip()
+            context.addPath(shapePaths.stroke)
+            context.fillPath()
+            context.restoreGState()
+        } else {
+            context.addPath(shapePaths.stroke)
+            context.fillPath()
         }
 
-        container.addSublayer(fillLayer)
-        container.addSublayer(strokeLayer)
-        return container
+        guard let image = context.makeImage() else { return nil }
+        particleBitmapCache[key] = image
+        return image
     }
 }

@@ -30,6 +30,8 @@ enum ConfettiPhysics {
     static func computeKeyframes(_ input: Input) -> Output {
         let fadeOutStart = max(0, input.fadeOutEnd - 0.5)
         let fadeOutMid = fadeOutStart + (input.fadeOutEnd - fadeOutStart) * 0.6
+        let includeX = input.xTiltRotations != 0
+        let includeY = input.tiltRotations != 0
         var transforms: [CATransform3D] = []
         var opacities: [Float] = []
 
@@ -69,10 +71,16 @@ enum ConfettiPhysics {
             var transform = CATransform3DIdentity
             transform = CATransform3DTranslate(transform, wx, wy, 0)
             transform = CATransform3DScale(transform, scale, scale, 1)
-            transform = CATransform3DRotate(transform, rotateX, 1, 0, 0)
-            transform = CATransform3DRotate(transform, rotateY, 0, 1, 0)
+            if includeX {
+                transform = CATransform3DRotate(transform, rotateX, 1, 0, 0)
+            }
+            if includeY {
+                transform = CATransform3DRotate(transform, rotateY, 0, 1, 0)
+            }
             transform = CATransform3DRotate(transform, rotateZ, 0, 0, 1)
-            transform.m34 = -1.0 / 500.0
+            if includeX || includeY {
+                transform.m34 = -1.0 / 500.0
+            }
 
             transforms.append(transform)
             opacities.append(Float(opacity))

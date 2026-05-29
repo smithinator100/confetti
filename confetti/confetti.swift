@@ -82,6 +82,8 @@ public struct ConfettiConfiguration {
 }
 
 public final class ConfettiView: UIView {
+    private static let rasterPixelSize: CGFloat = 96
+
     public var configuration: ConfettiConfiguration {
         didSet { applyConfiguration() }
     }
@@ -90,6 +92,9 @@ public final class ConfettiView: UIView {
     private let heroCoverLayer = CALayer()
     private let particleContainer = CALayer()
     private var coverGeneration = 0
+    private var activeParticleLayers: [CALayer] = []
+    private var removalWorkItem: DispatchWorkItem?
+    private var particleBitmapCache: [String: CGImage] = [:]
 
     public init(configuration: ConfettiConfiguration) {
         self.configuration = configuration
@@ -129,6 +134,11 @@ public final class ConfettiView: UIView {
             .compactMap { colorFamilies[$0] }
             .flatMap { $0 }
         if activeShades.isEmpty { return }
+
+        removalWorkItem?.cancel()
+        removalWorkItem = nil
+        activeParticleLayers.forEach { $0.removeFromSuperlayer() }
+        activeParticleLayers.removeAll(keepingCapacity: true)
 
         coverGeneration += 1
         let generation = coverGeneration
@@ -180,12 +190,7 @@ public final class ConfettiView: UIView {
                 )
             )
 
-            let particleLayer = makeParticleLayer(
-                variant: variant,
-                fillColor: shade.fill.cgColor,
-                strokeColor: shade.stroke.cgColor,
-                size: pieceSize
-            )
+            let particleLayer = makeParticleLayer(shape: shape, variant: variant, shade: shade, size: pieceSize)
             particleLayer.frame = CGRect(
                 x: bounds.midX,
                 y: bounds.midY,
@@ -193,6 +198,7 @@ public final class ConfettiView: UIView {
                 height: pieceSize
             )
             particleContainer.addSublayer(particleLayer)
+            activeParticleLayers.append(particleLayer)
 
             let keyTimes = (0...ConfettiPhysics.keyframeSteps).map {
                 NSNumber(value: Double($0) / Double(ConfettiPhysics.keyframeSteps))
@@ -213,11 +219,19 @@ public final class ConfettiView: UIView {
             group.isRemovedOnCompletion = false
             group.fillMode = .forwards
             particleLayer.add(group, forKey: "burst")
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + configuration.duration + 0.5) {
-                particleLayer.removeFromSuperlayer()
-            }
         }
+
+        let layersToRemove = activeParticleLayers
+        let workItem = DispatchWorkItem { [weak self] in
+            layersToRemove.forEach { $0.removeFromSuperlayer() }
+            guard let self else { return }
+            if self.activeParticleLayers.elementsEqual(layersToRemove, by: { $0 === $1 }) {
+                self.activeParticleLayers.removeAll(keepingCapacity: true)
+            }
+            self.removalWorkItem = nil
+        }
+        removalWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + configuration.duration + 0.5, execute: workItem)
     }
 
     private func setupLayers() {
@@ -270,44 +284,68 @@ public final class ConfettiView: UIView {
         heroCoverLayer.add(animation, forKey: "pictogramPulse")
     }
 
-    private func makeParticleLayer(
-        variant: ConfettiShapeVariant,
-        fillColor: CGColor,
-        strokeColor: CGColor,
-        size: Double
-    ) -> CALayer {
+    private func makeParticleLayer(shape: ConfettiShape, variant: ConfettiShapeVariant, shade: ConfettiShade, size: Double) -> CALayer {
         let side = CGFloat(size)
         let bounds = CGRect(x: 0, y: 0, width: side, height: side)
+        let particleLayer = CALayer()
+        particleLayer.bounds = bounds
+        particleLayer.contentsGravity = .resize
+        particleLayer.contentsScale = UIScreen.main.scale
 
-        guard let shapePaths = ConfettiShapeArt.paths(for: variant, in: bounds) else {
-            let fallback = CALayer()
-            fallback.backgroundColor = fillColor
-            fallback.cornerRadius = side / 2
-            return fallback
+        if let bitmap = particleBitmap(for: shape, variant: variant, shade: shade) {
+            particleLayer.contents = bitmap
+            return particleLayer
         }
 
-        let container = CALayer()
-        container.bounds = bounds
-        container.masksToBounds = false
+        particleLayer.backgroundColor = shade.fill.cgColor
+        particleLayer.cornerRadius = side / 2
+        return particleLayer
+    }
 
-        let fillLayer = CAShapeLayer()
-        fillLayer.path = shapePaths.fill
-        fillLayer.fillColor = fillColor
+    private func particleBitmap(for shape: ConfettiShape, variant: ConfettiShapeVariant, shade: ConfettiShade) -> CGImage? {
+        let key = [
+            shape.rawValue,
+            variant.fillPath,
+            variant.strokePath,
+            String(describing: shade.fill.cgColor),
+            String(describing: shade.stroke.cgColor),
+        ].joined(separator: "|")
+        if let cached = particleBitmapCache[key] { return cached }
 
-        let strokeLayer = CAShapeLayer()
-        strokeLayer.path = shapePaths.stroke
-        strokeLayer.fillColor = strokeColor
+        let drawRect = CGRect(x: 0, y: 0, width: Self.rasterPixelSize, height: Self.rasterPixelSize)
+        guard let shapePaths = ConfettiShapeArt.paths(for: variant, in: drawRect) else { return nil }
+        guard let context = CGContext(
+            data: nil,
+            width: Int(Self.rasterPixelSize),
+            height: Int(Self.rasterPixelSize),
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            return nil
+        }
 
+        context.setFillColor(shade.fill.cgColor)
+        context.addPath(shapePaths.fill)
+        context.fillPath()
+
+        context.setFillColor(shade.stroke.cgColor)
         if variant.clipStrokeToFill {
-            let clipMask = CAShapeLayer()
-            clipMask.path = shapePaths.fill
-            clipMask.fillColor = UIColor.black.cgColor
-            strokeLayer.mask = clipMask
+            context.saveGState()
+            context.addPath(shapePaths.fill)
+            context.clip()
+            context.addPath(shapePaths.stroke)
+            context.fillPath()
+            context.restoreGState()
+        } else {
+            context.addPath(shapePaths.stroke)
+            context.fillPath()
         }
 
-        container.addSublayer(fillLayer)
-        container.addSublayer(strokeLayer)
-        return container
+        guard let image = context.makeImage() else { return nil }
+        particleBitmapCache[key] = image
+        return image
     }
 }
 
@@ -434,6 +472,8 @@ private enum ConfettiPhysics {
     static func computeKeyframes(_ input: Input) -> Output {
         let fadeOutStart = max(0, input.fadeOutEnd - 0.5)
         let fadeOutMid = fadeOutStart + (input.fadeOutEnd - fadeOutStart) * 0.6
+        let includeX = input.xTiltRotations != 0
+        let includeY = input.tiltRotations != 0
 
         var transforms: [CATransform3D] = []
         var opacities: [Float] = []
@@ -474,10 +514,16 @@ private enum ConfettiPhysics {
             var transform = CATransform3DIdentity
             transform = CATransform3DTranslate(transform, wx, wy, 0)
             transform = CATransform3DScale(transform, scale, scale, 1)
-            transform = CATransform3DRotate(transform, rotateX, 1, 0, 0)
-            transform = CATransform3DRotate(transform, rotateY, 0, 1, 0)
+            if includeX {
+                transform = CATransform3DRotate(transform, rotateX, 1, 0, 0)
+            }
+            if includeY {
+                transform = CATransform3DRotate(transform, rotateY, 0, 1, 0)
+            }
             transform = CATransform3DRotate(transform, rotateZ, 0, 0, 1)
-            transform.m34 = -1.0 / 500.0
+            if includeX || includeY {
+                transform.m34 = -1.0 / 500.0
+            }
 
             transforms.append(transform)
             opacities.append(Float(opacity))
