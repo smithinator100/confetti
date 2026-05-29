@@ -1,0 +1,31 @@
+---
+description: Epic planning and implementation workflow — tests and docs
+alwaysApply: true
+---
+
+# Epic Workflow
+
+When planning or implementing an epic or story from `BUILD.md`:
+
+## 1. Verify acceptance criteria with automated tests
+
+- Translate each acceptance criterion into the lightest test that can prove it.
+- Default tools: `XCTest` for unit, `XCUITest` for UI behavior. Run via:
+  ```
+  xcodebuild test -scheme ConfettiPrototype -destination 'platform=macOS'
+  ```
+- For purely visual criteria (e.g. "matches Figma"), a `xcodebuild build` smoke check with zero warnings is the automated bar; visual parity is then verified on the developer machine per the BUILD.md Definition of Done.
+- A story is not done until its tests pass. State explicitly which test covers which acceptance criterion.
+
+## 2. Update documentation as you complete work
+
+Update `BUILD.md` in the same change that completes a story or epic:
+
+- Prepend `✅` to the completed story or epic heading.
+- Append a one-line completion note: date + what actually shipped (and any deviation from the original criteria).
+- At the epic level, add a short "Status" line summarizing what now works end-to-end.
+- If scope changed mid-flight, edit the acceptance criteria in place so `BUILD.md` stays truthful.
+
+## 3. Keep the taxonomy current
+
+If a story introduces a new name, file pattern, or convention, add it to `TAXONOMY.md` in the same change.

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Confetti</title>
+<meta name="color-scheme" content="light">
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #f2f4f7;
+    overflow: hidden;
+    font-family: "SF Pro", -apple-system, BlinkMacSystemFont, sans-serif;
+    color-scheme: light;
+  }
+  body {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+  .tweak-panel {
+    flex: 0 0 300px;
+    box-sizing: border-box;
+    color-scheme: light;
+    color: #1f2933;
+    background: #ffffff;
+    border-right: 1px solid #d8e0e8;
+    box-shadow: 1px 0 0 rgba(15, 23, 42, 0.04);
+    z-index: 10;
+    padding: 36px 16px 20px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .tweak-panel * {
+    color-scheme: light;
+  }
+  .preview-column {
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 44px 24px;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 100%;
+    overflow: hidden;
+  }
+  .stage {
+    position: relative;
+    width: 402px;
+    height: 874px;
+    flex-shrink: 0;
+    transform-origin: center center;
+  }
+  .stage > .layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  .mockup {
+    left: -1px;
+    top: -1px;
+    width: 404px;
+    height: 876px;
+    pointer-events: none;
+  }
+  .burst {
+    width: 402px;
+    height: 874px;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: 56px;
+  }
+  .particle-layer {
+    position: absolute;
+    left: 201px;
+    top: 192px;
+    pointer-events: none;
+  }
+  .layer.hero {
+    left: 147px;
+    top: 138px;
+    width: 108px;
+    height: 108px;
+    pointer-events: none;
+  }
+  .hero-cover {
+    display: none;
+  }
+  .confetti-trigger {
+    position: absolute;
+    left: 16px;
+    top: 795px;
+    width: 370px;
+    height: 50px;
+    background: #1074cc;
+    color: white;
+    border: none;
+    border-radius: 28px;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 500;
+    padding: 0 24px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background-color 0.1s ease, transform 0.05s ease;
+  }
+  .confetti-trigger:hover {
+    background: #0e66b3;
+  }
+  .confetti-trigger:active {
+    transform: scale(0.97);
+  }
+  .tweak-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: Menlo, Monaco, Consolas, "SFMono-Regular", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 10px;
+    margin-bottom: 12px;
+    color: #4b5f73;
+  }
+  .tweak-row {
+    margin-bottom: 10px;
+  }
+  .tweak-row--compact {
+    margin-bottom: 6px;
+  }
+  .tweak-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    font-family: Menlo, Monaco, Consolas, "SFMono-Regular", monospace;
+    font-size: 9px;
+    color: #66798b;
+  }
+  .tweak-value {
+    color: #273646;
+    min-width: 36px;
+    text-align: right;
+  }
+  .tweak-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 2px;
+    border-radius: 1px;
+    background: #c3d1de;
+    outline: none;
+  }
+  .tweak-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border: 1px solid #8ea2b5;
+    border-radius: 1px;
+    background: #ffffff;
+    cursor: pointer;
+  }
+  .color-options,
+  .shape-options {
+    display: grid;
+    gap: 5px;
+  }
+  .color-option,
+  .shape-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: Menlo, Monaco, Consolas, "SFMono-Regular", monospace;
+    font-size: 9px;
+    color: #273646;
+  }
+  .color-option input,
+  .shape-option input {
+    width: 11px;
+    height: 11px;
+    margin: 0;
+    accent-color: #1074cc;
+  }
+  .color-swatches {
+    display: inline-flex;
+    gap: 3px;
+    margin-left: auto;
+  }
+  .color-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12);
+  }
+</style>
+</head>
+<body>
+  <aside class="tweak-panel" aria-label="Confetti settings">
+    <div class="tweak-header">
+      <span>TWEAK</span>
+      <span>-</span>
+    </div>
+    <div class="tweak-row">
+      <label class="tweak-label" for="setting-particleCount"><span>particleCount</span><span class="tweak-value" id="value-particleCount">60</span></label>
+      <input class="tweak-slider" id="setting-particleCount" type="range" min="10" max="120" step="1" value="60">
+    </div>
+    <div class="tweak-row">
+      <label class="tweak-label" for="setting-startVelocity"><span>startVelocity</span><span class="tweak-value" id="value-startVelocity">25</span></label>
+      <input class="tweak-slider" id="setting-startVelocity" type="range" min="5" max="60" step="1" value="25">
+    </div>
+    <div class="tweak-row">
+      <label class="tweak-label" for="setting-spread"><span>spread</span><span class="tweak-value" id="value-spread">100</span></label>
+      <input class="tweak-slider" id="setting-spread" type="range" min="10" max="180" step="1" value="100">
+    </div>
+    <div class="tweak-row">
+      <label class="tweak-label" for="setting-decay"><span>decay</span><span class="tweak-value" id="value-decay">0.91</span></label>
+      <input class="tweak-slider" id="setting-decay" type="range" min="0.80" max="1.00" step="0.01" value="0.91">
+    </div>
+    <div class="tweak-row">
+      <label class="tweak-label" for="setting-gravity"><span>gravity</span><span class="tweak-value" id="value-gravity">1</span></label>
+      <input class="tweak-slider" id="setting-gravity" type="range" min="0" max="3" step="0.1" value="1">
+    </div>
+    <div class="tweak-row">
+      <label class="tweak-label" for="setting-duration"><span>duration</span><span class="tweak-value" id="value-duration">2.5</span></label>
+      <input class="tweak-slider" id="setting-duration" type="range" min="1" max="5" step="0.1" value="2.5">
+    </div>
+    <div class="tweak-row">
+      <label class="tweak-label" for="setting-fadeOutVariance"><span>fadeOutVariance</span><span class="tweak-value" id="value-fadeOutVariance">0.3</span></label>
+      <input class="tweak-slider" id="setting-fadeOutVariance" type="range" min="0" max="0.6" step="0.1" value="0.3">
+    </div>
+    <div class="tweak-row">
+      <label class="tweak-label" for="setting-xSpin"><span>xSpin</span><span class="tweak-value" id="value-xSpin">0</span></label>
+      <input class="tweak-slider" id="setting-xSpin" type="range" min="0" max="1" step="0.1" value="0">
+    </div>
+    <div class="tweak-row">
+      <label class="tweak-label" for="setting-ySpin"><span>ySpin</span><span class="tweak-value" id="value-ySpin">1</span></label>
+      <input class="tweak-slider" id="setting-ySpin" type="range" min="0" max="1" step="0.1" value="1">
+    </div>
+    <div class="tweak-row">
+      <label class="tweak-label" for="setting-size"><span>size</span><span class="tweak-value" id="value-size">1</span></label>
+      <input class="tweak-slider" id="setting-size" type="range" min="0.5" max="2" step="0.1" value="1">
+    </div>
+    <div class="tweak-row">
+      <label class="tweak-label" for="setting-sizeVariation"><span>sizeVariation</span><span class="tweak-value" id="value-sizeVariation">1</span></label>
+      <input class="tweak-slider" id="setting-sizeVariation" type="range" min="0" max="2" step="0.1" value="1">
+    </div>
+    <div class="tweak-row tweak-row--compact">
+      <div class="tweak-label"><span>shapes</span></div>
+      <div class="shape-options">
+        <label class="shape-option" for="shape-circle">
+          <input id="shape-circle" type="checkbox" data-shape="circle" checked>
+          <span>Circle</span>
+        </label>
+        <label class="shape-option" for="shape-rect">
+          <input id="shape-rect" type="checkbox" data-shape="rect" checked>
+          <span>Rectangle</span>
+        </label>
+        <label class="shape-option" for="shape-strip">
+          <input id="shape-strip" type="checkbox" data-shape="strip" checked>
+          <span>Strip</span>
+        </label>
+        <label class="shape-option" for="shape-star">
+          <input id="shape-star" type="checkbox" data-shape="star" checked>
+          <span>Star</span>
+        </label>
+        <label class="shape-option" for="shape-triangle">
+          <input id="shape-triangle" type="checkbox" data-shape="triangle" checked>
+          <span>Triangle</span>
+        </label>
+      </div>
+    </div>
+    <div class="tweak-row tweak-row--compact">
+      <div class="tweak-label"><span>colors</span></div>
+      <div class="color-options">
+        <label class="color-option" for="color-family-mandarin">
+          <input id="color-family-mandarin" type="checkbox" data-color-family="mandarin" checked>
+          <span>Mandarin</span>
+          <span class="color-swatches" aria-hidden="true">
+            <span class="color-swatch" style="background: #F05F2B"></span>
+            <span class="color-swatch" style="background: #CC3B0A"></span>
+            <span class="color-swatch" style="background: #9E2B08"></span>
+          </span>
+        </label>
+        <label class="color-option" for="color-family-pondwater">
+          <input id="color-family-pondwater" type="checkbox" data-color-family="pondwater" checked>
+          <span>Pondwater</span>
+          <span class="color-swatches" aria-hidden="true">
+            <span class="color-swatch" style="background: #4397E0"></span>
+            <span class="color-swatch" style="background: #1074CC"></span>
+            <span class="color-swatch" style="background: #045EB2"></span>
+          </span>
+        </label>
+        <label class="color-option" for="color-family-lilypad">
+          <input id="color-family-lilypad" type="checkbox" data-color-family="lilypad" checked>
+          <span>Lilypad</span>
+          <span class="color-swatches" aria-hidden="true">
+            <span class="color-swatch" style="background: #589D88"></span>
+            <span class="color-swatch" style="background: #247A64"></span>
+            <span class="color-swatch" style="background: #11604D"></span>
+          </span>
+        </label>
+        <label class="color-option" for="color-family-blossom">
+          <input id="color-family-blossom" type="checkbox" data-color-family="blossom" checked>
+          <span>Blossom</span>
+          <span class="color-swatches" aria-hidden="true">
+            <span class="color-swatch" style="background: #9F6EB8"></span>
+            <span class="color-swatch" style="background: #7D4794"></span>
+            <span class="color-swatch" style="background: #682A7A"></span>
+          </span>
+        </label>
+        <label class="color-option" for="color-family-pollen">
+          <input id="color-family-pollen" type="checkbox" data-color-family="pollen" checked>
+          <span>Pollen</span>
+          <span class="color-swatches" aria-hidden="true">
+            <span class="color-swatch" style="background: #FAB341"></span>
+            <span class="color-swatch" style="background: #F5A031"></span>
+            <span class="color-swatch" style="background: #B66A1F"></span>
+          </span>
+        </label>
+      </div>
+    </div>
+  </aside>
+  <div class="preview-column" id="preview-column">
+    <div class="stage" id="stage">
+      <img class="layer mockup" src="iphone-screen.png" alt="">
+      <img class="layer hero" src="subscription-check-hero.svg" alt="">
+      <div class="layer burst" id="burst">
+        <div class="particle-layer" id="particle-layer"></div>
+      </div>
+      <img class="layer hero hero-cover" id="hero-cover" src="subscription-check-hero.svg" alt="" aria-hidden="true">
+      <button class="confetti-trigger" type="button">Confetti</button>
+    </div>
+  </div>
+  <script src="motion.min.js"></script>
+  <script>
+    (function () {
+      var stage = document.getElementById('stage');
+      var previewColumn = document.getElementById('preview-column');
+      var burstRoot = document.getElementById('particle-layer');
+      var heroCover = document.getElementById('hero-cover');
+      var coverTimeout = null;
+      var trigger = document.querySelector('.confetti-trigger');
+      var motionAnimate = window.Motion && window.Motion.animate;
+      var STAGE_W = 402;
+      var STAGE_H = 874;
+      var VERTICAL_INSET = 44;
+      var HORIZONTAL_INSET = 24;
+      var PADDING = 0.925;
+      var KEYFRAME_STEPS = 40;
+      var SCALE_DURATION_FRACTION = 0.08;
+      // How long particles stay behind the hero (the initial pop) before
+      // moving to the front layer to rain down in front of it.
+      var FRONT_TRANSITION_MS = 200;
+      var settings = {
+        particleCount: 60,
+        startVelocity: 25,
+        spread: 100,
+        decay: 0.91,
+        gravity: 1,
+        drift: 0,
+        duration: 2.5,
+        fadeOutVariance: 0.3,
+        xSpin: 0,
+        ySpin: 1,
+        size: 1,
+        sizeVariation: 1,
+      };
+      var COLOR_FAMILIES = {
+        mandarin: ['#F05F2B', '#CC3B0A', '#9E2B08'],
+        pondwater: ['#4397E0', '#1074CC', '#045EB2'],
+        lilypad: ['#589D88', '#247A64', '#11604D'],
+        blossom: ['#9F6EB8', '#7D4794', '#682A7A'],
+        pollen: ['#FAB341', '#F5A031', '#B66A1F'],
+      };
+      var enabledColorFamilies = {
+        mandarin: true,
+        pondwater: true,
+        lilypad: true,
+        blossom: true,
+        pollen: true,
+      };
+      var SHAPES = ['circle', 'rect', 'rect', 'strip', 'strip', 'star', 'triangle'];
+      var enabledShapes = {
+        circle: true,
+        rect: true,
+        strip: true,
+        star: true,
+        triangle: true,
+      };
+      var BLOB_POINTS = [
+        [0.5, 0.0],
+        [0.69, 0.08],
+        [0.92, 0.24],
+        [1.0, 0.49],
+        [0.86, 0.76],
+        [0.63, 0.97],
+        [0.38, 0.94],
+        [0.13, 0.82],
+        [0.02, 0.58],
+        [0.09, 0.29],
+        [0.28, 0.07],
+      ];
+
+      function fit() {
+        var w = previewColumn ? previewColumn.clientWidth : window.innerWidth;
+        var h = previewColumn ? previewColumn.clientHeight : window.innerHeight;
+        var availableWidth = Math.max(w - (HORIZONTAL_INSET * 2), 1);
+        var availableHeight = Math.max(h - (VERTICAL_INSET * 2), 1);
+        var scale = Math.min(availableWidth / STAGE_W, availableHeight / STAGE_H) * PADDING;
+        stage.style.transform = 'scale(' + scale + ')';
+      }
+
+      function bindSetting(name, formatter) {
+        var input = document.getElementById('setting-' + name);
+        var valueLabel = document.getElementById('value-' + name);
+        if (!input || !valueLabel) return;
+
+        function update() {
+          settings[name] = Number(input.value);
+          valueLabel.textContent = formatter(settings[name]);
+        }
+
+        input.addEventListener('input', update);
+        update();
+      }
+
+      function bindColorFamily(name) {
+        var input = document.getElementById('color-family-' + name);
+        if (!input) return;
+
+        function update() {
+          enabledColorFamilies[name] = input.checked;
+        }
+
+        input.addEventListener('change', update);
+        update();
+      }
+
+      function bindShape(name) {
+        var input = document.getElementById('shape-' + name);
+        if (!input) return;
+
+        function update() {
+          enabledShapes[name] = input.checked;
+        }
+
+        input.addEventListener('change', update);
+        update();
+      }
+
+      function getActiveColors() {
+        var colors = [];
+        var familyNames = Object.keys(COLOR_FAMILIES);
+        for (var i = 0; i < familyNames.length; i++) {
+          var familyName = familyNames[i];
+          if (!enabledColorFamilies[familyName]) continue;
+          colors = colors.concat(COLOR_FAMILIES[familyName]);
+        }
+        return colors;
+      }
+
+      function getActiveShapes() {
+        var shapes = [];
+        for (var i = 0; i < SHAPES.length; i++) {
+          var shape = SHAPES[i];
+          if (!enabledShapes[shape]) continue;
+          shapes.push(shape);
+        }
+        return shapes;
+      }
+
+      function getShapeBorderRadius(shape, width, height) {
+        if (shape === 'circle') return '0';
+        if (shape === 'star' || shape === 'triangle') return '0';
+        if (shape === 'strip') return '999px';
+        return Math.max(4, Math.min(width, height) * 0.5) + 'px';
+      }
+
+      function getShapeClipPath(shape) {
+        if (shape === 'circle') return getPolygonClipPath(BLOB_POINTS);
+        if (shape === 'triangle') return 'polygon(50% 0%, 0% 100%, 100% 100%)';
+        return '';
+      }
+
+      function getPolygonClipPath(points) {
+        var mapped = points.map(function(point) {
+          return Math.round(point[0] * 100) + '% ' + Math.round(point[1] * 100) + '%';
+        });
+        return 'polygon(' + mapped.join(', ') + ')';
+      }
+
+      function getShapeMaskImage(shape) {
+        if (shape !== 'star') return '';
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="white" d="M50 0 Q57 33 100 50 Q57 67 50 100 Q43 67 0 50 Q43 33 50 0 Z"/></svg>';
+        return 'url("data:image/svg+xml;utf8,' + encodeURIComponent(svg) + '")';
+      }
+
+      function computeKeyframes(params) {
+        var angle = params.angle;
+        var startVelocity = params.startVelocity;
+        var decay = params.decay;
+        var gravity = params.gravity;
+        var drift = params.drift;
+        var wobbleSpeed = params.wobbleSpeed;
+        var wobbleOffset = params.wobbleOffset;
+        var size = params.size;
+        var ticks = params.ticks;
+        var xTiltRotations = params.xTiltRotations;
+        var tiltRotations = params.tiltRotations;
+        var rotation = params.rotation;
+        var fadeOutEnd = params.fadeOutEnd;
+        var fadeOutStart = Math.max(0, fadeOutEnd - 0.5);
+        var fadeOutMid = fadeOutStart + (fadeOutEnd - fadeOutStart) * 0.6;
+        var transform = [];
+        var opacity = [];
+        var velocity = startVelocity;
+        var x = 0;
+        var y = 0;
+        var wobble = wobbleOffset;
+        var tick = 0;
+
+        for (var step = 0; step <= KEYFRAME_STEPS; step++) {
+          var t = step / KEYFRAME_STEPS;
+
+          if (step > 0) {
+            var targetTick = Math.round((step * ticks) / KEYFRAME_STEPS);
+            while (tick < targetTick) {
+              x += Math.cos(angle) * velocity + drift;
+              y += Math.sin(angle) * velocity + gravity * 3;
+              velocity *= decay;
+              wobble += wobbleSpeed;
+              tick++;
+            }
+          }
+
+          var wx = step === 0 ? 0 : x + Math.cos(wobble) * 15 * size;
+          var wy = y;
+          var scale;
+          if (t < SCALE_DURATION_FRACTION * 0.6) {
+            scale = (t / (SCALE_DURATION_FRACTION * 0.6)) * 1.15;
+          } else if (t < SCALE_DURATION_FRACTION) {
+            var st = (t - SCALE_DURATION_FRACTION * 0.6) / (SCALE_DURATION_FRACTION * 0.4);
+            scale = 1.15 - st * 0.15;
+          } else {
+            scale = 1;
+          }
+
+          var rotateX = xTiltRotations * 360 * t;
+          var rotateY = tiltRotations * 360 * t;
+          var opacityKeyframe;
+          if (t <= fadeOutStart) {
+            opacityKeyframe = 1;
+          } else if (t <= fadeOutMid) {
+            opacityKeyframe = 1 - ((t - fadeOutStart) / (fadeOutMid - fadeOutStart)) * 0.5;
+          } else if (t <= fadeOutEnd) {
+            opacityKeyframe = 0.5 - ((t - fadeOutMid) / (fadeOutEnd - fadeOutMid)) * 0.5;
+          } else {
+            opacityKeyframe = 0;
+          }
+
+          transform.push(
+            'translate(' + wx + 'px, ' + wy + 'px) scale(' + scale + ') rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) rotate(' + rotation + 'deg)'
+          );
+          opacity.push(opacityKeyframe);
+        }
+
+        return { transform: transform, opacity: opacity };
+      }
+
+      function handleBurst() {
+        if (!burstRoot) return;
+
+        // Particles always live in front of the hero. To make the initial pop
+        // read as bursting from behind it, show an identical pictogram on top
+        // for the first FRONT_TRANSITION_MS, then remove it so the rain falls
+        // in front. The persistent hero underneath stays visible throughout.
+        if (heroCover) {
+          heroCover.style.display = 'block';
+          if (coverTimeout) clearTimeout(coverTimeout);
+          coverTimeout = setTimeout(function () {
+            heroCover.style.display = 'none';
+            coverTimeout = null;
+          }, FRONT_TRANSITION_MS);
+        }
+
+        var particleCount = settings.particleCount;
+        var startVelocity = settings.startVelocity;
+        var spread = settings.spread;
+        var decay = settings.decay;
+        var gravity = settings.gravity;
+        var drift = settings.drift;
+        var duration = settings.duration;
+        var fadeOutVariance = settings.fadeOutVariance;
+        var xSpin = settings.xSpin;
+        var ySpin = settings.ySpin;
+        var size = settings.size;
+        var sizeVariation = settings.sizeVariation;
+        var colors = getActiveColors();
+        var shapes = getActiveShapes();
+        var ticks = Math.round(duration * 60);
+        var nodes = [];
+
+        if (colors.length === 0) return;
+        if (shapes.length === 0) return;
+
+        for (var i = 0; i < particleCount; i++) {
+          var radSpread = spread * (Math.PI / 180);
+          var angle = -Math.PI / 2 + (0.5 * radSpread - Math.random() * radSpread);
+          var velocity = startVelocity * 0.5 + Math.random() * startVelocity;
+          var wobbleSpeed = Math.min(0.11, Math.random() * 0.1 + 0.05);
+          var wobbleOffset = Math.random() * 10;
+          var pieceSize = 6 * size + Math.random() * 6 * size * sizeVariation;
+          var tiltRotations = 2 + Math.random() * 4;
+          var rotation = Math.random() * 360;
+          var fadeOutEnd = 1 - Math.random() * fadeOutVariance;
+          var shape = shapes[Math.floor(Math.random() * shapes.length)];
+          var color = colors[Math.floor(Math.random() * colors.length)];
+
+          var keyframes = computeKeyframes({
+            angle: angle,
+            startVelocity: velocity,
+            decay: decay,
+            gravity: gravity,
+            drift: drift,
+            wobbleSpeed: wobbleSpeed,
+            wobbleOffset: wobbleOffset,
+            size: size,
+            ticks: ticks,
+            xTiltRotations: tiltRotations * xSpin,
+            tiltRotations: tiltRotations * ySpin,
+            rotation: rotation,
+            fadeOutEnd: fadeOutEnd,
+          });
+
+          var width = shape === 'strip' ? pieceSize * 0.3 : shape === 'rect' ? pieceSize * 0.7 : pieceSize;
+          var height = shape === 'strip' ? pieceSize * 2 : pieceSize;
+          var borderRadius = getShapeBorderRadius(shape, width, height);
+          var clipPath = getShapeClipPath(shape);
+          var maskImage = getShapeMaskImage(shape);
+          var node = document.createElement('div');
+          node.style.position = 'absolute';
+          node.style.width = width + 'px';
+          node.style.height = height + 'px';
+          node.style.borderRadius = borderRadius;
+          if (clipPath) {
+            node.style.clipPath = clipPath;
+            node.style.webkitClipPath = clipPath;
+          }
+          if (maskImage) {
+            node.style.maskImage = maskImage;
+            node.style.webkitMaskImage = maskImage;
+            node.style.maskRepeat = 'no-repeat';
+            node.style.webkitMaskRepeat = 'no-repeat';
+            node.style.maskSize = '100% 100%';
+            node.style.webkitMaskSize = '100% 100%';
+          }
+          node.style.backgroundColor = color;
+          node.style.willChange = 'transform, opacity';
+          node.style.pointerEvents = 'none';
+          burstRoot.appendChild(node);
+          if (motionAnimate) {
+            motionAnimate(node, keyframes, {
+              duration: duration,
+              ease: 'linear',
+            });
+          } else if (node.animate) {
+            var keyframeList = [];
+            for (var k = 0; k < keyframes.transform.length; k++) {
+              keyframeList.push({
+                transform: keyframes.transform[k],
+                opacity: keyframes.opacity[k],
+              });
+            }
+            node.animate(keyframeList, {
+              duration: duration * 1000,
+              easing: 'linear',
+              fill: 'forwards',
+            });
+          }
+          nodes.push(node);
+        }
+
+        setTimeout(function () {
+          for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            if (node.parentNode) node.parentNode.removeChild(node);
+          }
+        }, (duration + 0.5) * 1000);
+      }
+
+      fit();
+      bindSetting('particleCount', function (value) { return String(Math.round(value)); });
+      bindSetting('startVelocity', function (value) { return String(Math.round(value)); });
+      bindSetting('spread', function (value) { return String(Math.round(value)); });
+      bindSetting('decay', function (value) { return value.toFixed(2); });
+      bindSetting('gravity', function (value) { return String(Number(value.toFixed(1))); });
+      bindSetting('duration', function (value) { return String(Number(value.toFixed(1))); });
+      bindSetting('fadeOutVariance', function (value) { return String(Number(value.toFixed(1))); });
+      bindSetting('xSpin', function (value) { return String(Number(value.toFixed(1))); });
+      bindSetting('ySpin', function (value) { return String(Number(value.toFixed(1))); });
+      bindSetting('size', function (value) { return String(Number(value.toFixed(1))); });
+      bindSetting('sizeVariation', function (value) { return String(Number(value.toFixed(1))); });
+      bindShape('circle');
+      bindShape('rect');
+      bindShape('strip');
+      bindShape('star');
+      bindShape('triangle');
+      bindColorFamily('mandarin');
+      bindColorFamily('pondwater');
+      bindColorFamily('lilypad');
+      bindColorFamily('blossom');
+      bindColorFamily('pollen');
+      window.addEventListener('resize', fit);
+      if (trigger) trigger.addEventListener('click', handleBurst);
+    })();
+  </script>
+</body>
+</html>

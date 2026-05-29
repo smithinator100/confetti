@@ -1,0 +1,73 @@
+name: ConfettiPrototype
+options:
+  bundleIdPrefix: com.confetti
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  ConfettiPrototype:
+    type: application
+    platform: macOS
+    sources:
+      - path: ConfettiPrototype
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.confetti.prototype
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSPrincipalClass: NSApplication
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
+
+  ConfettiPrototypeTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: ConfettiPrototypeTests
+    dependencies:
+      - target: ConfettiPrototype
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.confetti.prototype.tests
+        GENERATE_INFOPLIST_FILE: YES
+
+  ConfettiPrototypeUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: ConfettiPrototypeUITests
+    dependencies:
+      - target: ConfettiPrototype
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.confetti.prototype.uitests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  ConfettiPrototype:
+    build:
+      targets:
+        ConfettiPrototype: all
+        ConfettiPrototypeTests: [test]
+        ConfettiPrototypeUITests: [test]
+    test:
+      targets:
+        - ConfettiPrototypeTests
+        - ConfettiPrototypeUITests
+    run:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

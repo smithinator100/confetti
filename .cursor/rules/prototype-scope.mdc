@@ -1,0 +1,15 @@
+---
+description: Prototype scope — only build what the current story needs
+alwaysApply: true
+---
+
+# Prototype Scope
+
+This is a POC. Bias hard toward minimum viable code.
+
+- Build only what the current story's acceptance criteria require. No speculative features, no extra config, no abstractions for single-use code.
+- If a UI element is interactive but not yet being built, use a static image placeholder (see `TAXONOMY.md` for the naming convention) instead of wiring up real behavior. Defer interactivity until its own story.
+- Prefer fewer files, less code, simpler patterns. If you're tempted to add flexibility "for later" — don't.
+- Match Figma where applicable, but stop at visual parity. Don't gold-plate.
+
+If the simplest path conflicts with an acceptance criterion, say so before coding around it.

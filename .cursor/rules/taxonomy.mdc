@@ -1,0 +1,13 @@
+---
+description: Project naming conventions live in TAXONOMY.md
+alwaysApply: true
+---
+
+# Taxonomy
+
+`TAXONOMY.md` at the repo root is the source of truth for names, file patterns, and conventions in this project.
+
+- Before naming a new type, file, resource, or concept, check `TAXONOMY.md` first and follow what's there.
+- When you introduce a new convention, add it to `TAXONOMY.md` in the same change that introduces it. Don't let the doc drift from the code.
+- If existing code conflicts with the taxonomy, fix one or the other in that change — never leave a known drift.
+- Keep entries terse: name + one-line rule + a concrete example.

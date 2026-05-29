@@ -1,0 +1,561 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		020AE1AB009128DFE0FD3F53 /* confetti.html in Resources */ = {isa = PBXBuildFile; fileRef = A21FE0B29F913BA37748FF34 /* confetti.html */; };
+		2C22AD09044144102E6A3698 /* WebPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AB33A01CC44BE9E930CBCA8 /* WebPane.swift */; };
+		411ADD5D011968BB58756AE3 /* motion.min.js in Resources */ = {isa = PBXBuildFile; fileRef = BBA2BAC09BCB37B4D68D775A /* motion.min.js */; };
+		5D85B091B35FFEF9DD6AE9AE /* NativeTweakPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F46A35E35B0D027384BCA12 /* NativeTweakPanel.swift */; };
+		6E5C070E34D89DDBB52A79AA /* ConfettiBurstView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3DDAB74E25C0613BAB8992 /* ConfettiBurstView.swift */; };
+		91FD7EE7E90D2935AAE7A603 /* ConfettiPhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E55B30EE62CB8D7185350E /* ConfettiPhysics.swift */; };
+		9678F922A3BFBC320AFB5081 /* ConfettiPhysicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC429851891B3E5D617C1517 /* ConfettiPhysicsTests.swift */; };
+		B7610E5CA3B98E98278E2688 /* ConfettiPrototypeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFE58D7083E4D5D38FBDC3D /* ConfettiPrototypeApp.swift */; };
+		BD7410C5092CD21DADD6FD8F /* NativePane.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFCB795168D431B05244114E /* NativePane.swift */; };
+		C017C3DC073C52918EAE48B2 /* ConfettiPrototypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D9C5C2DF77A28F529CA232 /* ConfettiPrototypeTests.swift */; };
+		C044E76EC659394E2D16E53F /* subscription-check-hero.svg in Resources */ = {isa = PBXBuildFile; fileRef = E9163BC4491853AE9A051D39 /* subscription-check-hero.svg */; };
+		C9DA2207BE89B80DE843B739 /* ConfettiPrototypeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91A030B3E178E14115A7565 /* ConfettiPrototypeUITests.swift */; };
+		CB6BA9BB18AD93AFCFCF20AB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90CFB26A18CDADD9E86B10CE /* ContentView.swift */; };
+		D351C073599995CC2F2151DB /* iphone-screen.png in Resources */ = {isa = PBXBuildFile; fileRef = 0114A7DCD2745889DE819139 /* iphone-screen.png */; };
+		D5797ACA3B2DA16F335C259E /* NativeConfettiSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4A3D58F91D53F70F0761B9 /* NativeConfettiSettings.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		50E27CE0D2FE9C996E227931 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA1E8E77673C59CA821C04E5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 134A37B244780A11B9128A89;
+			remoteInfo = ConfettiPrototype;
+		};
+		8F463185C14F4F6E61E84AE5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA1E8E77673C59CA821C04E5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 134A37B244780A11B9128A89;
+			remoteInfo = ConfettiPrototype;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0114A7DCD2745889DE819139 /* iphone-screen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iphone-screen.png"; sourceTree = "<group>"; };
+		1D4A3D58F91D53F70F0761B9 /* NativeConfettiSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeConfettiSettings.swift; sourceTree = "<group>"; };
+		5AB33A01CC44BE9E930CBCA8 /* WebPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPane.swift; sourceTree = "<group>"; };
+		7F46A35E35B0D027384BCA12 /* NativeTweakPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeTweakPanel.swift; sourceTree = "<group>"; };
+		86E55B30EE62CB8D7185350E /* ConfettiPhysics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiPhysics.swift; sourceTree = "<group>"; };
+		90CFB26A18CDADD9E86B10CE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		93D9C5C2DF77A28F529CA232 /* ConfettiPrototypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiPrototypeTests.swift; sourceTree = "<group>"; };
+		995ADD2AAD098FA32134FA16 /* ConfettiPrototype.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ConfettiPrototype.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A21FE0B29F913BA37748FF34 /* confetti.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = confetti.html; sourceTree = "<group>"; };
+		AAFE58D7083E4D5D38FBDC3D /* ConfettiPrototypeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiPrototypeApp.swift; sourceTree = "<group>"; };
+		BB3DDAB74E25C0613BAB8992 /* ConfettiBurstView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiBurstView.swift; sourceTree = "<group>"; };
+		BBA2BAC09BCB37B4D68D775A /* motion.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = motion.min.js; sourceTree = "<group>"; };
+		E9163BC4491853AE9A051D39 /* subscription-check-hero.svg */ = {isa = PBXFileReference; path = "subscription-check-hero.svg"; sourceTree = "<group>"; };
+		E91A030B3E178E14115A7565 /* ConfettiPrototypeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiPrototypeUITests.swift; sourceTree = "<group>"; };
+		EADEA871B7F34125BB33B3D5 /* ConfettiPrototypeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ConfettiPrototypeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		EF6FC39E7A18E43BEA3C7153 /* ConfettiPrototypeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ConfettiPrototypeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		EFCB795168D431B05244114E /* NativePane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePane.swift; sourceTree = "<group>"; };
+		FC429851891B3E5D617C1517 /* ConfettiPhysicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiPhysicsTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		598182DCDA6B7509507DB243 /* ConfettiPrototype */ = {
+			isa = PBXGroup;
+			children = (
+				BB3DDAB74E25C0613BAB8992 /* ConfettiBurstView.swift */,
+				86E55B30EE62CB8D7185350E /* ConfettiPhysics.swift */,
+				AAFE58D7083E4D5D38FBDC3D /* ConfettiPrototypeApp.swift */,
+				90CFB26A18CDADD9E86B10CE /* ContentView.swift */,
+				1D4A3D58F91D53F70F0761B9 /* NativeConfettiSettings.swift */,
+				EFCB795168D431B05244114E /* NativePane.swift */,
+				7F46A35E35B0D027384BCA12 /* NativeTweakPanel.swift */,
+				5AB33A01CC44BE9E930CBCA8 /* WebPane.swift */,
+				B8FC36067D13DEEA233DBEDC /* Resources */,
+			);
+			path = ConfettiPrototype;
+			sourceTree = "<group>";
+		};
+		67D8531CD49D9BBB9F03D219 /* ConfettiPrototypeUITests */ = {
+			isa = PBXGroup;
+			children = (
+				E91A030B3E178E14115A7565 /* ConfettiPrototypeUITests.swift */,
+			);
+			path = ConfettiPrototypeUITests;
+			sourceTree = "<group>";
+		};
+		7471DFFB3920A560A4A621B3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				995ADD2AAD098FA32134FA16 /* ConfettiPrototype.app */,
+				EF6FC39E7A18E43BEA3C7153 /* ConfettiPrototypeTests.xctest */,
+				EADEA871B7F34125BB33B3D5 /* ConfettiPrototypeUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		92AFD1923E8D6B992CDA5353 /* ConfettiPrototypeTests */ = {
+			isa = PBXGroup;
+			children = (
+				FC429851891B3E5D617C1517 /* ConfettiPhysicsTests.swift */,
+				93D9C5C2DF77A28F529CA232 /* ConfettiPrototypeTests.swift */,
+			);
+			path = ConfettiPrototypeTests;
+			sourceTree = "<group>";
+		};
+		B390A7BE8E162F2122D903F6 = {
+			isa = PBXGroup;
+			children = (
+				598182DCDA6B7509507DB243 /* ConfettiPrototype */,
+				92AFD1923E8D6B992CDA5353 /* ConfettiPrototypeTests */,
+				67D8531CD49D9BBB9F03D219 /* ConfettiPrototypeUITests */,
+				7471DFFB3920A560A4A621B3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B8FC36067D13DEEA233DBEDC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A21FE0B29F913BA37748FF34 /* confetti.html */,
+				0114A7DCD2745889DE819139 /* iphone-screen.png */,
+				BBA2BAC09BCB37B4D68D775A /* motion.min.js */,
+				E9163BC4491853AE9A051D39 /* subscription-check-hero.svg */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		09B316E14230A7E4EC122EEF /* ConfettiPrototypeUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 75F8C51A84D069A503DB9F4B /* Build configuration list for PBXNativeTarget "ConfettiPrototypeUITests" */;
+			buildPhases = (
+				5965F66F096359A368041B9A /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6391BEBA1DBA813159171BEA /* PBXTargetDependency */,
+			);
+			name = ConfettiPrototypeUITests;
+			packageProductDependencies = (
+			);
+			productName = ConfettiPrototypeUITests;
+			productReference = EADEA871B7F34125BB33B3D5 /* ConfettiPrototypeUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		134A37B244780A11B9128A89 /* ConfettiPrototype */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2042131CE2DEC290993B902A /* Build configuration list for PBXNativeTarget "ConfettiPrototype" */;
+			buildPhases = (
+				755176CD2C7D91269309A502 /* Sources */,
+				A08363A6F0FCF9660D83B8F3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ConfettiPrototype;
+			packageProductDependencies = (
+			);
+			productName = ConfettiPrototype;
+			productReference = 995ADD2AAD098FA32134FA16 /* ConfettiPrototype.app */;
+			productType = "com.apple.product-type.application";
+		};
+		8C0CF6F7740AFB8D4713C0C6 /* ConfettiPrototypeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F1FCF38D4132FD64F1BA914E /* Build configuration list for PBXNativeTarget "ConfettiPrototypeTests" */;
+			buildPhases = (
+				BE232B51CAC07B4541561002 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3D81F4FD3524FCBE0C0B35EF /* PBXTargetDependency */,
+			);
+			name = ConfettiPrototypeTests;
+			packageProductDependencies = (
+			);
+			productName = ConfettiPrototypeTests;
+			productReference = EF6FC39E7A18E43BEA3C7153 /* ConfettiPrototypeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA1E8E77673C59CA821C04E5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					09B316E14230A7E4EC122EEF = {
+						TestTargetID = 134A37B244780A11B9128A89;
+					};
+					134A37B244780A11B9128A89 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 37347FA11F9B1A0B80AAC7A5 /* Build configuration list for PBXProject "ConfettiPrototype" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = B390A7BE8E162F2122D903F6;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 7471DFFB3920A560A4A621B3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				134A37B244780A11B9128A89 /* ConfettiPrototype */,
+				8C0CF6F7740AFB8D4713C0C6 /* ConfettiPrototypeTests */,
+				09B316E14230A7E4EC122EEF /* ConfettiPrototypeUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A08363A6F0FCF9660D83B8F3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				020AE1AB009128DFE0FD3F53 /* confetti.html in Resources */,
+				D351C073599995CC2F2151DB /* iphone-screen.png in Resources */,
+				411ADD5D011968BB58756AE3 /* motion.min.js in Resources */,
+				C044E76EC659394E2D16E53F /* subscription-check-hero.svg in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5965F66F096359A368041B9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C9DA2207BE89B80DE843B739 /* ConfettiPrototypeUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		755176CD2C7D91269309A502 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6E5C070E34D89DDBB52A79AA /* ConfettiBurstView.swift in Sources */,
+				91FD7EE7E90D2935AAE7A603 /* ConfettiPhysics.swift in Sources */,
+				B7610E5CA3B98E98278E2688 /* ConfettiPrototypeApp.swift in Sources */,
+				CB6BA9BB18AD93AFCFCF20AB /* ContentView.swift in Sources */,
+				D5797ACA3B2DA16F335C259E /* NativeConfettiSettings.swift in Sources */,
+				BD7410C5092CD21DADD6FD8F /* NativePane.swift in Sources */,
+				5D85B091B35FFEF9DD6AE9AE /* NativeTweakPanel.swift in Sources */,
+				2C22AD09044144102E6A3698 /* WebPane.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BE232B51CAC07B4541561002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9678F922A3BFBC320AFB5081 /* ConfettiPhysicsTests.swift in Sources */,
+				C017C3DC073C52918EAE48B2 /* ConfettiPrototypeTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3D81F4FD3524FCBE0C0B35EF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 134A37B244780A11B9128A89 /* ConfettiPrototype */;
+			targetProxy = 50E27CE0D2FE9C996E227931 /* PBXContainerItemProxy */;
+		};
+		6391BEBA1DBA813159171BEA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 134A37B244780A11B9128A89 /* ConfettiPrototype */;
+			targetProxy = 8F463185C14F4F6E61E84AE5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		14ED8B215459AAF45E9B3348 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.confetti.prototype.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ConfettiPrototype.app/Contents/MacOS/ConfettiPrototype";
+			};
+			name = Release;
+		};
+		1A1650DC838397F40201D014 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.confetti.prototype.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ConfettiPrototype.app/Contents/MacOS/ConfettiPrototype";
+			};
+			name = Debug;
+		};
+		544DD9DF6FCA25FE55762093 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		5E08916E3F134DEDF9C6A844 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.confetti.prototype;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		662E017789B653E70D043E56 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.confetti.prototype.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = ConfettiPrototype;
+			};
+			name = Release;
+		};
+		9A9057A2826D17EDF082002A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.confetti.prototype.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = ConfettiPrototype;
+			};
+			name = Debug;
+		};
+		AB06E094FA3D6000FCE78CCB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.confetti.prototype;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D8D8DC7AA21526F499B4E945 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2042131CE2DEC290993B902A /* Build configuration list for PBXNativeTarget "ConfettiPrototype" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AB06E094FA3D6000FCE78CCB /* Debug */,
+				5E08916E3F134DEDF9C6A844 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		37347FA11F9B1A0B80AAC7A5 /* Build configuration list for PBXProject "ConfettiPrototype" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8D8DC7AA21526F499B4E945 /* Debug */,
+				544DD9DF6FCA25FE55762093 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		75F8C51A84D069A503DB9F4B /* Build configuration list for PBXNativeTarget "ConfettiPrototypeUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9A9057A2826D17EDF082002A /* Debug */,
+				662E017789B653E70D043E56 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F1FCF38D4132FD64F1BA914E /* Build configuration list for PBXNativeTarget "ConfettiPrototypeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A1650DC838397F40201D014 /* Debug */,
+				14ED8B215459AAF45E9B3348 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AA1E8E77673C59CA821C04E5 /* Project object */;
+}

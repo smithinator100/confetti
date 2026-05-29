@@ -1,0 +1,1 @@
+open ~/Library/Developer/Xcode/DerivedData/ConfettiPrototype-*/Build/Products/Debug/ConfettiPrototype.app
